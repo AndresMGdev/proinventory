@@ -1,3 +1,6 @@
+'use client';
+import { useState, useEffect } from "react";
+import Profile from "@/components/Profile";
 const ProfilePage = () => {
   const [user, setUser] = useState(null);
 
@@ -13,7 +16,7 @@ const ProfilePage = () => {
       {user ? (
         <Profile {...user} />
       ) : (
-        <p>Loading...</p>
+        <p className="text-center">Loading...</p>
       )}
     </>
   );

@@ -10,16 +10,17 @@ const Home = () => {
   useEffect(() => {
     const loggedUserFromStorage = JSON.parse(localStorage.getItem('loggedUser')) || [];
     const usersFromStorage = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-    setRegisteredUsers(usersFromStorage.filter(users => !users.isDelete));
+      setRegisteredUsers(usersFromStorage.filter(users => !users.isDelete));
     if (loggedUserFromStorage.length > 0 || loggedUserFromStorage.email) {
       const usersFromStorage = JSON.parse(localStorage.getItem('registeredUsers')) || [];
       setRegisteredUsers(usersFromStorage.filter(users => !users.isDelete));
     } else {
       setTimeout(() => {
-        router.push('/');
+        router.push('/auth/login');
       }, 1000);
     }
   }, []);
+
   return (
     <>
       <div className="hero min-h-screen bg-base-200">
@@ -36,14 +37,21 @@ const Home = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {registeredUsers.map(user => (
-                      <UsersTable
-                        key={user.documentId}
-                        email={user.email}
-                        name={user.firstName}
-                        lastname={user.lastName}
-                      />
-                    ))}
+                    {registeredUsers.length > 0 ? (
+                      registeredUsers.map(user => (
+                        <UsersTable
+                          key={user.documentId}
+                          email={user.email}
+                          name={user.firstName}
+                          lastname={user.lastName}
+                        />
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="3" className="text-center">No existen usuarios registrados</td>
+                      </tr>
+                    )
+                    }
                   </tbody>
                 </table>
               </div>
