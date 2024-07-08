@@ -1,9 +1,91 @@
 import Image from "next/image";
 import Modal from "./Modal";
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
 
 
 const Profile = ({ email, name, lastname, identification, typeId, phone, address }) => {
+    const router = useRouter();
 
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        watch,
+    } = useForm();
+
+    const onSubmit = handleSubmit((data) => {
+        const authUser= JSON.parse(localStorage.getItem('authUser') || 'null');
+
+        if (authUser) {
+            const users = {};
+
+            for (const key in localStorage) {
+                try {
+                    const user = JSON.parse(localStorage.getItem(key) || 'null');
+                    if (user && user.email) {
+                        users[key] = user;
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
+            }
+
+            if (users[authUser.email]) {
+                users[authUser.email].password = data.password;
+                const modal = document.getElementById('my_modal_3');
+                modal.showModal()
+                setTimeout(() => {
+                    modal.close()
+                    localStorage.setItem(authUser.email, JSON.stringify(users[authUser.email]));
+                }, 3000)
+            } else {
+                console.log('Copia de authUser no encontrada en el array.');
+            }
+        } else {
+            console.log('authUser no está disponible en el localStorage.');
+        }
+    });
+
+    const handleOpenModal = () => {
+        const modal = document.getElementById('my_modal_1');
+        modal.showModal();
+    };
+
+    const handleOpenModalForm = () => {
+        const modal = document.getElementById('my_modal_2') ;
+        modal.showModal();
+    };
+
+    const handleConfirmDeleteAccount = () => {
+        const storedUsers = localStorage.getItem('users');
+        if (storedUsers) {
+            const users = JSON.parse(storedUsers);
+            const updatedUsers = users.filter((user) => user.identification !== identification);
+            localStorage.setItem('users', JSON.stringify(updatedUsers));
+
+            localStorage.removeItem('authUser');
+        }
+
+        const modal = document.getElementById('my_modal_1') ;
+        modal.close();
+        setTimeout(() => {
+            router.push('/auth/login');
+        }, 1000)
+    };
+
+    const handleCancelDeleteAccount = () => {
+        console.log('Cancelled');
+        const modal = document.getElementById('my_modal_1') ;
+        modal.close();
+    };
+
+    const handleCancelForm = () => {
+        console.log('Cancelled');
+        const modal = document.getElementById('my_modal_2') ;
+        modal.close();
+    };
     return (
         <>
             <div className="flex flex-col">
