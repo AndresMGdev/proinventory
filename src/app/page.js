@@ -16,7 +16,7 @@ const Home = () => {
       setRegisteredUsers(usersFromStorage.filter(users => !users.isDelete));
     } else {
       setTimeout(() => {
-        router.push('/auth/login');
+        router.push('/');
       }, 1000);
     }
   }, []);
