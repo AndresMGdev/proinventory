@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
-import Modal from '@/components/Modal';
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import Modal from "@/components/ui/Modal";
 
 const RegisterPage = () => {
   const {
@@ -15,20 +15,19 @@ const RegisterPage = () => {
   const router = useRouter();
 
   const onSubmit = handleSubmit((data) => {
-    const modal = document.getElementById('my_modal_5');
+    const modal = document.getElementById("my_modal_5");
     modal.showModal();
 
     localStorage.setItem(data.email, JSON.stringify(data));
     console.log("User registered successfully");
 
-    router.push('/auth/login');
-
+    router.push("/auth/login");
   });
 
   const onConfirm = () => {
-    const modal = document.getElementById('my_modal_5');
+    const modal = document.getElementById("my_modal_5");
     modal.close();
-  }
+  };
 
   return (
     <>
@@ -43,42 +42,56 @@ const RegisterPage = () => {
                     <span className="label-text">Email</span>
                   </label>
                   <input
-                    {...register('email', {
-                      required: 'Email is required',
+                    {...register("email", {
+                      required: "Email is required",
                       pattern: {
                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'Invalid email address',
+                        message: "Invalid email address",
                       },
                     })}
                     type="email"
                     placeholder="Email"
-                    className={`input input-bordered ${errors.email ? 'input-error' : ''}`}
+                    className={`input input-bordered ${
+                      errors.email ? "input-error" : ""
+                    }`}
                   />
-                  {errors.email && <span className="text-red-500">{`${errors.email.message}`}</span>}
+                  {errors.email && (
+                    <span className="text-red-500">{`${errors.email.message}`}</span>
+                  )}
                 </div>
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text">Name</span>
                   </label>
                   <input
-                    {...register('name', { required: 'Name is required' })}
+                    {...register("name", { required: "Name is required" })}
                     type="text"
                     placeholder="Name"
-                    className={`input input-bordered ${errors.name ? 'input-error' : ''}`}
+                    className={`input input-bordered ${
+                      errors.name ? "input-error" : ""
+                    }`}
                   />
-                  {errors.name && <span className="text-red-500">{`${errors.name.message}`}</span>}
+                  {errors.name && (
+                    <span className="text-red-500">{`${errors.name.message}`}</span>
+                  )}
                 </div>
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text">Lastname</span>
                   </label>
                   <input
-                    {...register('lastname', { required: 'Lastname is required' })}
+                    {...register("lastname", {
+                      required: "Lastname is required",
+                    })}
                     type="text"
                     placeholder="Lastname"
-                    className={`input input-bordered ${errors.lastname ? 'input-error' : ''}`}
+                    className={`input input-bordered ${
+                      errors.lastname ? "input-error" : ""
+                    }`}
                   />
-                  {errors.lastname && <span className="text-red-500">{`${errors.lastname.message}`}</span>}
+                  {errors.lastname && (
+                    <span className="text-red-500">{`${errors.lastname.message}`}</span>
+                  )}
                 </div>
               </div>
               <div className="f2 lg:mr-2">
@@ -88,14 +101,15 @@ const RegisterPage = () => {
                   </label>
                   <div className="flex">
                     <select
-                      {...register('typeId', {
+                      {...register("typeId", {
                         required: {
                           value: true,
-                          message: "Type ID is required"
-                        }
+                          message: "Type ID is required",
+                        },
                       })}
-                      className={`select select-bordered w-auto ${errors.typeId ? 'select-error' : ''
-                        }`}
+                      className={`select select-bordered w-auto ${
+                        errors.typeId ? "select-error" : ""
+                      }`}
                     >
                       <option disabled value="">
                         Type
@@ -108,10 +122,14 @@ const RegisterPage = () => {
                       <option value="DNI">DNI</option>
                     </select>
                     <input
-                      {...register('identification', { required: 'ID Number is required' })}
+                      {...register("identification", {
+                        required: "ID Number is required",
+                      })}
                       type="text"
                       placeholder="ID Number"
-                      className={`input input-bordered ml-2 ${errors.identification ? 'input-error' : ''}`}
+                      className={`input input-bordered ml-2 ${
+                        errors.identification ? "input-error" : ""
+                      }`}
                     />
                   </div>
                   <div className="flex">
@@ -119,7 +137,9 @@ const RegisterPage = () => {
                       <span className="text-red-500">{`${errors.typeId.message}`}</span>
                     )}
                     {errors.identification && (
-                      <span className="text-red-500">-{`${errors.identification.message}`}</span>
+                      <span className="text-red-500">
+                        -{`${errors.identification.message}`}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -129,24 +149,36 @@ const RegisterPage = () => {
                     <span className="label-text">Number Phone</span>
                   </label>
                   <input
-                    {...register('phone', { required: 'Phone Number is required' })}
+                    {...register("phone", {
+                      required: "Phone Number is required",
+                    })}
                     type="text"
                     placeholder="Phone Number"
-                    className={`input input-bordered ${errors.phone ? 'input-error' : ''}`}
+                    className={`input input-bordered ${
+                      errors.phone ? "input-error" : ""
+                    }`}
                   />
-                  {errors.phone && <span className="text-red-500">{`${errors.phone.message}`}</span>}
+                  {errors.phone && (
+                    <span className="text-red-500">{`${errors.phone.message}`}</span>
+                  )}
                 </div>
                 <div className="form-control">
                   <label className="label">
                     <span className="label-text">Address</span>
                   </label>
                   <input
-                    {...register('address', { required: 'Address is required' })}
+                    {...register("address", {
+                      required: "Address is required",
+                    })}
                     type="text"
                     placeholder="Address"
-                    className={`input input-bordered ${errors.address ? 'input-error' : ''}`}
+                    className={`input input-bordered ${
+                      errors.address ? "input-error" : ""
+                    }`}
                   />
-                  {errors.address && <span className="text-red-500">{`${errors.address.message}`}</span>}
+                  {errors.address && (
+                    <span className="text-red-500">{`${errors.address.message}`}</span>
+                  )}
                 </div>
               </div>
               <div className="f3">
@@ -155,16 +187,18 @@ const RegisterPage = () => {
                     <span className="label-text">Password</span>
                   </label>
                   <input
-                    {...register('password', {
-                      required: 'Password is required',
+                    {...register("password", {
+                      required: "Password is required",
                       minLength: {
                         value: 8,
-                        message: 'Password must have at least 8 characters',
+                        message: "Password must have at least 8 characters",
                       },
                     })}
                     type="password"
                     placeholder="Password"
-                    className={`input input-bordered ${errors.password ? 'input-error' : ''}`}
+                    className={`input input-bordered ${
+                      errors.password ? "input-error" : ""
+                    }`}
                   />
                   {errors.password && (
                     <span className="text-red-500">{`${errors.password.message}`}</span>
@@ -175,14 +209,16 @@ const RegisterPage = () => {
                     <span className="label-text">Confirm Password</span>
                   </label>
                   <input
-                    {...register('confirmPassword', {
-                      required: 'Confirm Password is required',
+                    {...register("confirmPassword", {
+                      required: "Confirm Password is required",
                       validate: (value) =>
-                        value === watch('password') || 'Passwords do not match',
+                        value === watch("password") || "Passwords do not match",
                     })}
                     type="password"
                     placeholder="Confirm Password"
-                    className={`input input-bordered ${errors.confirmPassword ? 'input-error' : ''}`}
+                    className={`input input-bordered ${
+                      errors.confirmPassword ? "input-error" : ""
+                    }`}
                   />
                   {errors.confirmPassword && (
                     <span className="text-red-500">{`${errors.confirmPassword.message}`}</span>

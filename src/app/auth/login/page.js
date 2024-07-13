@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import Modal from '@/components/Modal';
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import Modal from "@/components/ui/Modal";
 
 const LoginPage = () => {
-  const router = useRouter()
+  const router = useRouter();
 
   const {
     register,
@@ -15,29 +15,29 @@ const LoginPage = () => {
   } = useForm();
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('authUser') || '{}');
+    const userData = JSON.parse(localStorage.getItem("authUser") || "{}");
     if (userData && userData.email) {
-      router.push('/product');
+      router.push("/product");
     }
   }, [router]);
 
   const onSubmit = (data) => {
     const userDataJson = localStorage.getItem(data.email);
     console.log(userDataJson);
-  
+
     if (userDataJson) {
       const userData = JSON.parse(userDataJson);
-  
+
       if (userData.password === data.password) {
-        const modal = document.getElementById('my_modal_5');
+        const modal = document.getElementById("my_modal_5");
         modal.showModal();
-  
+
         setTimeout(() => {
-          const modal = document.getElementById('my_modal_5');
+          const modal = document.getElementById("my_modal_5");
           modal.close();
           console.log(userData.name + " You Are Successfully Logged In");
-          localStorage.setItem('authUser', JSON.stringify(userData));
-          router.push('/');
+          localStorage.setItem("authUser", JSON.stringify(userData));
+          router.push("/");
         }, 1500);
       } else {
         console.log("Email or Password is not matching with our record 2");
@@ -63,7 +63,9 @@ const LoginPage = () => {
                 className="input input-bordered"
                 required
               />
-              {errors.email && <span className="text-red-500">Email is required</span>}
+              {errors.email && (
+                <span className="text-red-500">Email is required</span>
+              )}
             </div>
             <div className="form-control">
               <label className="label">
@@ -76,9 +78,13 @@ const LoginPage = () => {
                 className="input input-bordered"
                 required
               />
-              {errors.password && <span className="text-red-500">Password is required</span>}
+              {errors.password && (
+                <span className="text-red-500">Password is required</span>
+              )}
               <label className="label">
-                <a href="#" className="label-text-alt link link-hover">Forgot password?</a>
+                <a href="#" className="label-text-alt link link-hover">
+                  Forgot password?
+                </a>
               </label>
             </div>
             <div className="form-control mt-6">
@@ -88,11 +94,8 @@ const LoginPage = () => {
         </div>
       </div>
 
-      <Modal
-        id="my_modal_5"
-        title="You have logged in successfully!"
-      />
+      <Modal id="my_modal_5" title="You have logged in successfully!" />
     </>
   );
-}
+};
 export default LoginPage;
