@@ -48,10 +48,10 @@ const LoginPage = () => {
   };
   return (
     <>
-      <div className="hero-content flex-col lg:flex-row-reverse">
+      <div className="hero min-h-screen bg-base-200">
         <div className="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
-          <form className="card-body" onSubmit={handleSubmit(onSubmit)}>
-            <h2 className="card-title">Login</h2>
+          <form className="card-body" onSubmit={handleSubmit(onSubmit)} noValidate>
+            <h2 className="card-title">Login / Ingresar</h2>
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Email</span>

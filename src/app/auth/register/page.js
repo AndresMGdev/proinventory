@@ -31,10 +31,10 @@ const RegisterPage = () => {
 
   return (
     <>
-      <div className="hero-content flex-col lg:flex-row-reverse">
+      <div className="hero min-h-[90vh] bg-base-200">
         <div className="card shrink-0 w-[100%] shadow-2xl bg-base-100">
           <form className="card-body items-center" onSubmit={onSubmit}>
-            <h2 className="card-title">Register</h2>
+            <h2 className="card-title">Register / Registrarse</h2>
             <div className="lg:flex items-stretch">
               <div className="f1 lg:mr-2">
                 <div className="form-control">

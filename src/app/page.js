@@ -28,6 +28,7 @@ const Home = () => {
         <div className="hero-content text-center">
           <div className="card w-auto bg-base-100 shadow-xl">
             <div className="card-body">
+              <h2 className="card-title text-center">Usuarios registrados en el sistema</h2>
               <div className="overflow-x-auto">
                 <table className="table">
                   <thead>
