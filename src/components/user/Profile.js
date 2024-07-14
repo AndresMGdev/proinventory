@@ -3,6 +3,7 @@ import Modal from "../ui/Modal";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
+import { useInputHook } from "@/hooks/use-input-hook";
 
 const Profile = ({
   email,
@@ -13,7 +14,6 @@ const Profile = ({
   phone,
   address,
 }) => {
-  const router = useRouter();
 
   const {
     register,
@@ -21,219 +21,308 @@ const Profile = ({
     formState: { errors },
     watch,
   } = useForm();
+  const router = useRouter();
+  let { value: passwordOldValue, bind: passwordOldBind } = useInputHook('');
+  let { value: passwordNewValue, bind: passwordNewBind } = useInputHook('');
+  let { value: passwordVerificationNewValue, bind: passwordVerificationNewBind } = useInputHook('');
 
-  const onSubmit = handleSubmit((data) => {
-    const authUser = JSON.parse(localStorage.getItem("authUser") || "null");
+  const [userLogged, setUserLogged] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [message, setMessage] = useState({ text: '', type: '' });
+  const [messageEdit, setMessageEdit] = useState({ text: '', type: '' });
+  const [formEvent, setFormEvent] = useState(null);
+  useEffect(() => {
+    const storedUserData = localStorage.getItem("authUser");
+    if (storedUserData) {
+      setUserLogged(JSON.parse(storedUserData));
+    }
+  }, []);
+  useEffect(() => {
+    setValueFirtsName(userLogged.name || '');
+    setValuelastname(userLogged.lastname || '');
+    setValuetypeId(userLogged.typeId || '');
+    setValueAddress(userLogged.address || '');
+  }, [userLogged]);
 
-    if (authUser) {
-      const users = {};
+  let { value: nameValue, bind: nameBind, setValue: setValueFirtsName } = useInputHook('');
+  let { value: lastnameValue, bind: lastnameBind, setValue: setValuelastname } = useInputHook('');
+  let { value: typeIdValue, bind: typeIdBind, setValue: setValuetypeId } = useInputHook('');
+  let { value: addressValue, bind: addressBind, setValue: setValueAddress } = useInputHook('');
 
-      for (const key in localStorage) {
-        try {
-          const user = JSON.parse(localStorage.getItem(key) || "null");
-          if (user && user.email) {
-            users[key] = user;
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      }
+  const handleShowModal = (event) => {
+    event.preventDefault();
+    setFormEvent(event);
+    document.getElementById('modal_change_password').showModal();
+  };
 
-      if (users[authUser.email]) {
-        users[authUser.email].password = data.password;
-        const modal = document.getElementById("my_modal_3");
-        modal.showModal();
-        setTimeout(() => {
-          modal.close();
-          localStorage.setItem(
-            authUser.email,
-            JSON.stringify(users[authUser.email])
-          );
-        }, 3000);
-      } else {
-        console.log("Copia de authUser no encontrada en el array.");
+  const handleConfirm = () => {
+    document.getElementById('modal_change_password').close();
+    if (formEvent) {
+      changePasswordUser(formEvent);
+      setTimeout(() => {
+        setMessage({ text: '' })
+      }, 3000);
+    }
+  };
+
+  const handleCancel = () => {
+    document.getElementById('modal_change_password').close();
+    setMessage({ text: 'Cambio de contraseña cancelado.', type: 'alert alert-warning' });
+    setTimeout(() => {
+      setMessage({ text: '' })
+    }, 3000);
+  };
+
+  const handleShowModalDeleteAcount = (event) => {
+    event.preventDefault();
+    setFormEvent(event);
+    document.getElementById('modal_delete_acount').showModal();
+  };
+
+  const handleConfirmDeleteAcount = () => {
+    document.getElementById('modal_delete_acount').close();
+    if (formEvent) {
+      deleteUserAcount();
+    }
+  };
+
+  const handleCancelDeleteAcount = () => {
+    document.getElementById('modal_delete_acount').close();
+    setMessage({ text: 'Eliminación de cuenta cancelada.', type: 'alert alert-warning' });
+    setTimeout(() => {
+      setMessage({ text: '' })
+    }, 3000);
+  };
+  const handleEditClick = (event) => {
+    event.preventDefault();
+    setIsEditing(true);
+  };
+
+  const handleEditCancelClick = () => {
+    setIsEditing(false);
+  };
+  const handleEditSaveClick = (event) => {
+    event.preventDefault();
+    const registeredUser = JSON.parse(localStorage.getItem(userLogged.email)) || [];
+
+    userLogged.name = nameValue;
+    registeredUser.name = nameValue;
+    userLogged.lastname = lastnameValue;
+    registeredUser.lastname = lastnameValue;
+    userLogged.typeId = typeIdValue;
+    registeredUser.typeId = typeIdValue;
+    userLogged.address = addressValue;
+    registeredUser.address = addressValue;
+    localStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
+    localStorage.setItem('authUser', JSON.stringify(userLogged));
+    setMessageEdit({ text: 'Usuario editado correctamente.', type: 'alert alert-success' });
+
+    setTimeout(() => {
+      setMessageEdit({ text: '' })
+    }, 3000);
+    setIsEditing(false);
+  };
+
+  const changePasswordUser = (event) => {
+    event.preventDefault();
+    const form = event.target;
+    if (form.checkValidity() === false) {
+      form.classList.add('was-validated');
+      setMessage({ text: 'Por favor, diligencia todos los campos', type: 'alert alert-error' });
+      return;
+    }
+    if (passwordOldValue !== userLogged.password) {
+      setMessage({ text: 'La contraseña actual no corresponde con la contraseña anterior.', type: 'alert alert-error' });
+      return;
+    }
+    if (passwordNewValue === passwordVerificationNewValue) {
+      if (passwordOldValue === passwordNewValue) {
+        setMessage({ text: 'La contraseña nueva no puede ser identica a la actual.', type: 'alert alert-error' });
+        return;
       }
     } else {
-      console.log("authUser no está disponible en el localStorage.");
-    }
-  });
-
-  const handleOpenModal = () => {
-    const modal = document.getElementById("my_modal_1");
-    modal.showModal();
-  };
-
-  const handleOpenModalForm = () => {
-    const modal = document.getElementById("my_modal_2");
-    modal.showModal();
-  };
-
-  const handleConfirmDeleteAccount = () => {
-    const storedUsers = localStorage.getItem("users");
-    if (storedUsers) {
-      const users = JSON.parse(storedUsers);
-      const updatedUsers = users.filter(
-        (user) => user.identification !== identification
-      );
-      localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-      localStorage.removeItem("authUser");
+      setMessage({ text: 'La confirmación de la contraseña y la nueva contraseña no son iguales.', type: 'alert alert-error' });
+      return;
     }
 
-    const modal = document.getElementById("my_modal_1");
-    modal.close();
+    const registeredUser = JSON.parse(localStorage.getItem(userLogged.email)) || [];
+
+    registeredUser.password = passwordNewValue;
+    registeredUser.confirmPassword = passwordVerificationNewValue;
+
+    localStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
+
+    setMessage({ text: 'Contraseña actualizada con éxito', type: 'alert alert-success' });
+    localStorage.removeItem('authUser');
     setTimeout(() => {
-      router.push("/auth/login");
+      router.push('/auth/login');
     }, 1000);
   };
 
-  const handleCancelDeleteAccount = () => {
-    console.log("Cancelled");
-    const modal = document.getElementById("my_modal_1");
-    modal.close();
-  };
+  const deleteUserAcount = () => {
+    const registeredUser = JSON.parse(localStorage.getItem(userLogged.email)) || [];
 
-  const handleCancelForm = () => {
-    console.log("Cancelled");
-    const modal = document.getElementById("my_modal_2");
-    modal.close();
+      registeredUser.isDelete = true;
+
+      localStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
+
+      setMessage({ text: 'Cuenta eliminada con éxito', type: 'alert alert-success' });
+      localStorage.removeItem('authUser');
+      setTimeout(() => {
+        router.push('/auth/login');
+      }, 1000);
+  }
+
+  const encodeBase64 = word => {
+    let encodedStringBtoA = undefined;
+    if (word !== null && word !== undefined && word.length > 0) {
+      encodedStringBtoA = btoa(word);
+    }
+    return encodedStringBtoA;
   };
   return (
     <>
-      <div className="flex flex-col">
-        <div className="overflow-y-auto sm:p-0 pt-4 pr-4 pb-20 pl-4">
-          <div className="flex justify-center items-end text-center min-h-screen sm:block">
-            <div className="bg-gray-500 transition-opacity bg-opacity-75"></div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen">
-              ​
-            </span>
-            <div className="inline-block text-left bg-gray-900 rounded-lg overflow-hidden align-bottom transition-all transform shadow-2xl sm:my-8 sm:align-middle sm:max-w-xl sm:w-full">
-              <div className="items-center w-full mr-auto ml-auto relative max-w-7xl md:px-12 lg:px-24">
-                <div className="grid grid-cols-1">
-                  <div className="mt-4 mr-auto mb-4 ml-auto bg-gray-900 max-w-lg">
-                    <div className="flex flex-col items-center pt-6 pr-6 pb-6 pl-6">
-                      <Image
-                        width={100}
-                        height={100}
-                        src="/colombia.png"
-                        alt="bandera de colombia"
-                      />
-                      <p className="mt-8 text-2xl font-semibold leading-none text-white tracking-tighter lg:text-3xl">{`${name} ${lastname}`}</p>
-                      <p className="mt-3 text-base leading-relaxed text-center text-gray-200">
-                        Email: {email}
-                      </p>
-                      <p className="mt-3 text-base leading-relaxed text-center text-gray-200">
-                        {typeId}: {identification}
-                      </p>
-
-                      <p className="mt-3 text-base leading-relaxed text-center text-gray-200">
-                        Number Phone: {phone}
-                      </p>
-                      <p className="mt-3 text-base leading-relaxed text-center text-gray-200">
-                        Address: {address}
-                      </p>
-
-                      <div className="w-full mt-6 flex justify-between">
-                        <button className="btn btn-info">Update</button>
-                        <button
-                          className="btn btn-error"
-                          onClick={handleOpenModal}
-                        >
-                          Delete Account
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+      <div className="hero min-h-screen bg-base-200 ">
+        <div className="flex rounded-xl w-[50%] bg-base-100 shadow-xl my-4">
+          <form noValidate className="w-1/2 p-4" onSubmit={handleEditSaveClick}>
+            <h1 className="text-2xl mt-4 font-bold text-center">Información del usuario</h1>
+            <div className="m-8">
+              <label className="font-bold">Email:</label>
+              <label className="ml-2">{userLogged.email}</label>
+            </div>
+            <div className="m-8">
+              <label className="font-bold">Nombres(s):</label>
+              {isEditing ? (
+                <input type="text" id="name" name="name" placeholder="Ingresa tus nombres" required className="input input-bordered w-full"  {...nameBind} value={nameValue} />
+              ) : (
+                <label className="ml-2">{userLogged.name}</label>
+              )}
+            </div>
+            <div className="m-8">
+              <label className="font-bold">Apellido(s):</label>
+              {isEditing ? (
+                <input name="lastname" type="text" placeholder="Ingresa tus apellidos" required className="input input-bordered w-full" {...lastnameBind} value={lastnameValue} />
+              ) : (
+                <label className="ml-2">{userLogged.lastname}</label>
+              )}
+            </div>
+            <div className="m-8">
+              <label className="font-bold">Tipo de identificación:</label>
+              {isEditing ? (
+                <select
+                id="documentType" name="documentType" className="select select-bordered w-full" required {...typeIdBind} value={typeIdValue}
+                >
+                  <option disabled value="">
+                    Tipo de identificación:
+                  </option>
+                  <option value="TI">TI</option>
+                  <option value="RC">RC</option>
+                  <option value="CC">CC</option>
+                  <option value="CE">CE</option>
+                  <option value="CI">CI</option>
+                  <option value="DNI">DNI</option>
+                </select>
+              ) : (
+                <label>{typeId}</label>
+              )}
+            </div>
+            <div className="m-8">
+              <label className="font-bold">Número o Id de identificación:</label>
+              <label className="ml-2">{userLogged.identification}</label>
+            </div>
+            <div className="m-8">
+              <label className="font-bold">Teléfono:</label>
+              <label className="ml-2">{userLogged.phone}</label>
+            </div>
+            <div className="m-8">
+              <label className="font-bold">Dirección:</label>
+              {isEditing ? (
+                <input type="text" name="address" placeholder="Ingresa tu dirección de residencia" className="input input-bordered w-full" required {...addressBind} value={addressValue} />
+              ) : (
+                <label className="ml-2">{userLogged.address}</label>
+              )}
+            </div>
+            <div className="m-8 text-center">
+              {isEditing ? (
+                <div>
+                  <button type="submit" className="btn btn-active btn-accent mr-4">
+                    Guardar
+                  </button>
+                  <button onClick={handleEditCancelClick} className="btn btn-error">
+                    Cancelar
+                  </button>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="card w-full bg-neutral text-neutral-content">
-          <form
-            className="card-body items-center text-center"
-            onSubmit={onSubmit}
-          >
-            <h2 className="card-title">Change Password!</h2>
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Password</span>
-              </label>
-              <input
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 8,
-                    message: "Password must have at least 8 characters",
-                  },
-                })}
-                type="password"
-                placeholder="Password"
-                className={`input input-bordered ${
-                  errors.password ? "input-error" : ""
-                }`}
-              />
-              {errors.password && (
-                <span className="text-red-500">{errors.password.message}</span>
+
+
+              ) : (
+                <button onClick={handleEditClick} className="btn btn-active btn-accent">
+                  Editar
+                </button>
               )}
             </div>
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text">Confirm Password</span>
-              </label>
-              <input
-                {...register("confirmPassword", {
-                  required: "Confirm Password is required",
-                  validate: (value) =>
-                    value === watch("password") || "Passwords do not match",
-                })}
-                type="password"
-                placeholder="Confirm Password"
-                className={`input input-bordered ${
-                  errors.confirmPassword ? "input-error" : ""
-                }`}
-              />
-              {errors.confirmPassword && (
-                <span className="text-red-500">
-                  {errors.confirmPassword.message}
-                </span>
-              )}
+            {messageEdit.text && (
+              <div className="w-[60%] mx-auto my-2">
+                <div role="alert" className={`pl-[20%] ${messageEdit.type}`}>{messageEdit.text}</div>
+              </div>)}
+          </form>
+
+          <form className="w-2/2 p-4 " onSubmit={handleShowModal} noValidate>
+            <h2 className="text-2xl mt-4 font-bold text-center"> Cambio de contraseña</h2>
+            <div className="form-control m-8">
+              <label className="fw-bold">Contraseña/Password anterior:</label>
+              <input type="password" placeholder="Password" className="input input-bordered w-full" required {...passwordOldBind} />
             </div>
-            <div className="card-actions justify-end">
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleOpenModalForm}
-              >
-                Change Password
+            <div className="form-control m-8">
+              <label className="fw-bold">Contraseña/Password nueva:</label>
+              <input type="password" placeholder="Password" className="input input-bordered w-full" required {...passwordNewBind} />
+            </div>
+            <div className="form-control m-8">
+              <label className="fw-bold">Verificación Contraseña/Password nueva:</label>
+              <input type="password" placeholder="Password" className="input input-bordered w-full" required {...passwordVerificationNewBind} />
+            </div>
+            <div className="align-items-center text-center">
+              <button className="btn btn-outline mb-2" type="submit">
+                Cambiar contraseña
               </button>
             </div>
-            <Modal
-              id="my_modal_2"
-              title="Are you sure you want to change your password?"
-              message="Remember not to use passwords that are too difficult to remember, as this will make it very easy to return!"
-              onConfirm={handleCancelForm}
-              onCancel={handleCancelForm}
-            />
+
+            <div className=" p-2  w-auto align-items-center text-center">
+              <button className="btn btn-error mb-4" onClick={handleShowModalDeleteAcount}>
+                Eliminar cuenta
+              </button>
+            </div>
+            {message.text && (
+              <div className="w-[60%] mx-auto my-2">
+                <div role="alert" className={`pl-[20%] ${message.type}`}>{message.text}</div>
+              </div>)}
           </form>
+          <dialog id="modal_change_password" className="modal">
+            <div className="modal-box">
+              <h3 className="font-bold text-lg">Confirmación de cambio de contraseña</h3>
+              <p className="py-4">¿Está seguro de que desea cambiar la contraseña?</p>
+              <div className="modal-action">
+                <form method="dialog">
+                  <button className="btn btn-outline mb-4 mr-2" onClick={handleConfirm}>Confirmar</button>
+                  <button className="btn btn-error mb-4 ml-2" onClick={handleCancel}>Cancelar</button>
+                </form>
+              </div>
+            </div>
+          </dialog>
+          <dialog id="modal_delete_acount" className="modal">
+            <div className="modal-box">
+              <h3 className="font-bold text-lg">Eliminar cuenta</h3>
+              <p className="py-4">¿Está seguro de que desea eliminar su cuenta?</p>
+              <div className="modal-action">
+                <form method="dialog">
+                  <button className="btn btn-outline mb-4 mr-2" onClick={handleConfirmDeleteAcount}>Confirmar</button>
+                  <button className="btn btn-error mb-4 ml-2" onClick={handleCancelDeleteAcount}>Cancelar</button>
+                </form>
+              </div>
+            </div>
+          </dialog>
         </div>
+
       </div>
-
-      <Modal
-        id="my_modal_1"
-        title="You are about to delete your account"
-        message="Are you sure you want to delete it? The data will be permanently deleted and cannot be recovered."
-        onConfirm={handleConfirmDeleteAccount}
-        onCancel={handleCancelDeleteAccount}
-      />
-
-      <Modal
-        id="my_modal_3"
-        title="Password changed"
-        message="Your password has been changed successfully!"
-        cancel={false}
-        submit={false}
-      />
     </>
   );
 };

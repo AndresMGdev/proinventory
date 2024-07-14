@@ -15,17 +15,16 @@ const RegisterPage = () => {
   const router = useRouter();
 
   const onSubmit = handleSubmit((data) => {
-    const modal = document.getElementById("my_modal_5");
+    const modal = document.getElementById("my_modal_6");
     modal.showModal();
 
     localStorage.setItem(data.email, JSON.stringify(data));
-    console.log("User registered successfully");
 
     router.push("/auth/login");
   });
 
   const onConfirm = () => {
-    const modal = document.getElementById("my_modal_5");
+    const modal = document.getElementById("my_modal_6");
     modal.close();
   };
 
@@ -236,8 +235,8 @@ const RegisterPage = () => {
       </div>
 
       <Modal
-        id="my_modal_5"
-        title="You have successfully registered!"
+        id="my_modal_6"
+        title="¡Te has registrado con éxito!"
         onConfirm={onConfirm}
       />
     </>

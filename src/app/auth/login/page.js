@@ -23,19 +23,16 @@ const LoginPage = () => {
 
   const onSubmit = (data) => {
     const userDataJson = localStorage.getItem(data.email);
-    console.log(userDataJson);
-
     if (userDataJson) {
       const userData = JSON.parse(userDataJson);
 
       if (userData.password === data.password) {
-        const modal = document.getElementById("my_modal_5");
+        const modal = document.getElementById("my_modal_4");
         modal.showModal();
 
         setTimeout(() => {
-          const modal = document.getElementById("my_modal_5");
+          const modal = document.getElementById("my_modal_4");
           modal.close();
-          console.log(userData.name + " You Are Successfully Logged In");
           localStorage.setItem("authUser", JSON.stringify(userData));
           router.push("/");
         }, 1500);
@@ -94,7 +91,7 @@ const LoginPage = () => {
         </div>
       </div>
 
-      <Modal id="my_modal_5" title="You have logged in successfully!" />
+      <Modal id="my_modal_4" title="¡Has iniciado sesión correctamente!" />
     </>
   );
 };
