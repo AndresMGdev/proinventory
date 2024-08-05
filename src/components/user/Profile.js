@@ -1,97 +1,53 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import Image from "next/image";
+import Modal from "../ui/Modal";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { useInputHook } from "@/hooks/use-input-hook";
-import { getUserByEmailService } from "@/services/users";
-import { validateTokenExp, getEmailUserLogged } from "@/helpers/helpers";
-import { updateUserService } from "@/services/users";
-const ProfilePage = () => {
 
-  const [documentsTypeList] = useState([
-    { id: 1, name: 'Cédula de Ciudadanía (CC)' },
-    { id: 2, name: 'Tarjeta de Identidad (TI)' },
-    { id: 3, name: 'Registro Civil (RC)' },
-    { id: 4, name: 'Cédula de Extranjería (CE)' },
-    { id: 5, name: 'Carné de Identidad (CI)' },
-    { id: 6, name: 'Documento Nacional de Identidad (DNI)' }
-  ]);
-  let [user, setUser] = useState(null);
+const Profile = ({
+  email,
+  name,
+  lastname,
+  identification,
+  typeId,
+  phone,
+  address,
+}) => {
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm();
   const router = useRouter();
+  let { value: passwordOldValue, bind: passwordOldBind } = useInputHook('');
+  let { value: passwordNewValue, bind: passwordNewBind } = useInputHook('');
+  let { value: passwordVerificationNewValue, bind: passwordVerificationNewBind } = useInputHook('');
 
   const [userLogged, setUserLogged] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
   const [messageEdit, setMessageEdit] = useState({ text: '', type: '' });
   const [formEvent, setFormEvent] = useState(null);
-
-
-
-  let { value: nameValue, bind: nameBind, setValue: setValueFirtsName } = useInputHook('');
-  let { value: lastnameValue, bind: lastnameBind, setValue: setValuelastname } = useInputHook('');
-  let { value: phoneValue, bind: phoneBind, setValue: setValuePhone } = useInputHook('');
-  let { value: addressValue, bind: addressBind, setValue: setValueAddress } = useInputHook('');
-
-  let { value: passwordOldValue, bind: passwordOldBind } = useInputHook('');
-  let { value: passwordNewValue, bind: passwordNewBind } = useInputHook('');
-  let { value: passwordVerificationNewValue, bind: passwordVerificationNewBind } = useInputHook('');
-
   useEffect(() => {
-    user && updateUser();
-  }, [user]);
-
-  const updateUser = () => {
-    updateUserService(getEmailUserLogged(localStorage.getItem('userToken')), user, localStorage.getItem('userToken'))
-      .then(response => {
-        if (response) {
-          setMessageEdit({ text: response.data.message, type: 'alert alert-success' });
-
-          setTimeout(() => {
-            setMessageEdit({ text: '' })
-          }, 3000);
-          setIsEditing(false);
-
-        }
-      })
-      .catch(err => {
-        setMessageEdit({ text: err.response.data, type: 'alert alert-error' });
-        setTimeout(() => {
-          setMessageEdit({ text: '' })
-        }, 3000);
-      })
-  }
-
-  useEffect(() => {
-    const tokenIsValid = validateTokenExp(localStorage.getItem('userToken'))
-    if (tokenIsValid) {
-      userLogged && getUserByEmail();
-    } else {
-      setTimeout(() => {
-        router.push('/');
-      }, 1000);
+    const storedUserData = localStorage.getItem("authUser");
+    if (storedUserData) {
+      setUserLogged(JSON.parse(storedUserData));
     }
   }, []);
-
   useEffect(() => {
-    setValueFirtsName(userLogged.first_name || '');
-    setValuelastname(userLogged.last_name || '');
-    setValuePhone(userLogged.phone || '');
+    setValueFirtsName(userLogged.name || '');
+    setValuelastname(userLogged.lastname || '');
+    setValuetypeId(userLogged.typeId || '');
     setValueAddress(userLogged.address || '');
   }, [userLogged]);
 
-  const getUserByEmail = () => {
-    const email = getEmailUserLogged(localStorage.getItem('userToken'))
-    getUserByEmailService(email, localStorage.getItem('userToken'))
-      .then(response => {
-        if (response) {
-          setUserLogged(response.data.data);
-        }
-      })
-      .catch(error => console.log(error));
-  }
-
-
+  let { value: nameValue, bind: nameBind, setValue: setValueFirtsName } = useInputHook('');
+  let { value: lastnameValue, bind: lastnameBind, setValue: setValuelastname } = useInputHook('');
+  let { value: typeIdValue, bind: typeIdBind, setValue: setValuetypeId } = useInputHook('');
+  let { value: addressValue, bind: addressBind, setValue: setValueAddress } = useInputHook('');
 
   const handleShowModal = (event) => {
     event.preventDefault();
@@ -107,16 +63,6 @@ const ProfilePage = () => {
         setMessage({ text: '' })
       }, 3000);
     }
-  };
-  const handleEditSaveClick = (event) => {
-    event.preventDefault();
-    const userEdited = {
-      first_name: nameValue,
-      last_name: lastnameValue,
-      phone: phoneValue,
-      address: addressValue
-    };
-    setUser(userEdited)
   };
 
   const handleCancel = () => {
@@ -155,7 +101,27 @@ const ProfilePage = () => {
   const handleEditCancelClick = () => {
     setIsEditing(false);
   };
+  const handleEditSaveClick = (event) => {
+    event.preventDefault();
+    const registeredUser = JSON.parse(localStorage.getItem(userLogged.email)) || [];
 
+    userLogged.name = nameValue;
+    registeredUser.name = nameValue;
+    userLogged.lastname = lastnameValue;
+    registeredUser.lastname = lastnameValue;
+    userLogged.typeId = typeIdValue;
+    registeredUser.typeId = typeIdValue;
+    userLogged.address = addressValue;
+    registeredUser.address = addressValue;
+    localStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
+    localStorage.setItem('authUser', JSON.stringify(userLogged));
+    setMessageEdit({ text: 'Usuario editado correctamente.', type: 'alert alert-success' });
+
+    setTimeout(() => {
+      setMessageEdit({ text: '' })
+    }, 3000);
+    setIsEditing(false);
+  };
 
   const changePasswordUser = (event) => {
     event.preventDefault();
@@ -196,17 +162,24 @@ const ProfilePage = () => {
   const deleteUserAcount = () => {
     const registeredUser = JSON.parse(localStorage.getItem(userLogged.email)) || [];
 
-    registeredUser.isDelete = true;
+      registeredUser.isDelete = true;
 
-    localStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
+      localStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
 
-    setMessage({ text: 'Cuenta eliminada con éxito', type: 'alert alert-success' });
-    localStorage.removeItem('authUser');
-    setTimeout(() => {
-      router.push('/auth/login');
-    }, 1000);
+      setMessage({ text: 'Cuenta eliminada con éxito', type: 'alert alert-success' });
+      localStorage.removeItem('authUser');
+      setTimeout(() => {
+        router.push('/auth/login');
+      }, 1000);
   }
 
+  const encodeBase64 = word => {
+    let encodedStringBtoA = undefined;
+    if (word !== null && word !== undefined && word.length > 0) {
+      encodedStringBtoA = btoa(word);
+    }
+    return encodedStringBtoA;
+  };
   return (
     <>
       <div className="hero min-h-screen bg-base-200 ">
@@ -222,7 +195,7 @@ const ProfilePage = () => {
               {isEditing ? (
                 <input type="text" id="name" name="name" placeholder="Ingresa tus nombres" required className="input input-bordered w-full"  {...nameBind} value={nameValue} />
               ) : (
-                <label className="ml-2">{userLogged.first_name}</label>
+                <label className="ml-2">{userLogged.name}</label>
               )}
             </div>
             <div className="m-8">
@@ -230,24 +203,36 @@ const ProfilePage = () => {
               {isEditing ? (
                 <input name="lastname" type="text" placeholder="Ingresa tus apellidos" required className="input input-bordered w-full" {...lastnameBind} value={lastnameValue} />
               ) : (
-                <label className="ml-2">{userLogged.last_name}</label>
+                <label className="ml-2">{userLogged.lastname}</label>
               )}
             </div>
             <div className="m-8">
               <label className="font-bold">Tipo de identificación:</label>
-              <label>{documentsTypeList.find(documentType => documentType.id == userLogged.document_type)?.name || 'No disponible'}</label>
+              {isEditing ? (
+                <select
+                id="documentType" name="documentType" className="select select-bordered w-full" required {...typeIdBind} value={typeIdValue}
+                >
+                  <option disabled value="">
+                    Tipo de identificación:
+                  </option>
+                  <option value="TI">TI</option>
+                  <option value="RC">RC</option>
+                  <option value="CC">CC</option>
+                  <option value="CE">CE</option>
+                  <option value="CI">CI</option>
+                  <option value="DNI">DNI</option>
+                </select>
+              ) : (
+                <label>{typeId}</label>
+              )}
             </div>
             <div className="m-8">
               <label className="font-bold">Número o Id de identificación:</label>
-              <label className="ml-2">{userLogged.document_id}</label>
+              <label className="ml-2">{userLogged.identification}</label>
             </div>
             <div className="m-8">
               <label className="font-bold">Teléfono:</label>
-              {isEditing ? (
-                <input type="number" name="phone" placeholder="Ingresa tu numero telefonico" className="input input-bordered w-full" required {...phoneBind} value={phoneValue} />
-              ) : (
-                <label className="ml-2">{userLogged.phone}</label>
-              )}
+              <label className="ml-2">{userLogged.phone}</label>
             </div>
             <div className="m-8">
               <label className="font-bold">Dirección:</label>
@@ -342,4 +327,4 @@ const ProfilePage = () => {
   );
 };
 
-export default ProfilePage;
+export default Profile;

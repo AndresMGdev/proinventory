@@ -2,27 +2,27 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { fetchProductsData } from '@/services/product';
+// import { useState, useEffect } from 'react';
+// import { fetchProductsData } from '@/services/product';
 
-export const MenuPhone = () => {
+export const MenuProduct = () => {
 
-    const [countPro, setCountPro] = useState(0);
+    // const [countPro, setCountPro] = useState(0);
 
-    useEffect(() => {
-        const getProducts = async () => {
-            try {
-                const productsData = await fetchProductsData();
-                if (productsData) {
-                    setCountPro(productsData.length);
-                } 
-            } catch (err) {
-                console.error('Failed to fetch product data');
-            }
-        };
+    // useEffect(() => {
+    //     const getProducts = async () => {
+    //         try {
+    //             const productsData = await fetchProductsData();
+    //             if (productsData) {
+    //                 setCountPro(productsData.length);
+    //             } 
+    //         } catch (err) {
+    //             console.error('Failed to fetch product data');
+    //         }
+    //     };
 
-        getProducts();
-    }, []);
+    //     getProducts();
+    // }, []);
 
     const pathname = usePathname();
     return (
@@ -39,7 +39,7 @@ export const MenuPhone = () => {
                             </g>
                         </svg>
                         Products
-                        <span className="badge badge-sm">{countPro}</span>
+                        {/* <span className="badge badge-sm">{countPro}</span> */}
                     </Link>
                 </li>
                 <li>
