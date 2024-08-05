@@ -11,14 +11,13 @@ const Header = () => {
     const router = useRouter();
     const shouldShowProductLink = !pathname.startsWith('/product');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [userData, setUserData] = useState(null); // Estado para el usuario logueado
+    const [userToken, setUserToken] = useState(null); // Estado para el usuario logueado
 
     useEffect(() => {
-        // Verificar si localStorage está disponible
         if (typeof window !== 'undefined') {
-            const storedUserData = localStorage.getItem('authUser');
-            if (storedUserData) {
-                setUserData(JSON.parse(storedUserData));
+            const storeduserToken = localStorage.getItem('userToken');
+            if (storeduserToken) {
+                setUserToken(storeduserToken);
             }
         }
     }, []);
@@ -29,7 +28,7 @@ const Header = () => {
 
     const handleLogout = () => {
         if (typeof window !== 'undefined') {
-            localStorage.removeItem('authUser');
+            localStorage.removeItem('userToken');
             const modal = document.getElementById('my_modal_5');
             modal.close();
             setTimeout(() => {
@@ -82,34 +81,34 @@ const Header = () => {
                     <ul className={`menu max-lg:absolute max-lg:right-2 max-lg:top-14 max-lg:mt-3 max-lg:z-[10] max-lg:p-2 lg:menu-horizontal lg:px-1 max-lg:shadow max-lg:bg-base-100 max-lg:rounded-box max-lg:w-52 ${mobileMenuOpen ? '' : 'hidden'}`}>
                         <li>
                             <Link href="/" className={`${pathname === '/' ? 'active' : ''}`}>
-                                Home
+                                Pagina principal
                             </Link>
                         </li>
-                        {userData && (
+                        {userToken && (
                             <li>
                                 <Link href="/profile" className={`${pathname === '/profile' ? 'active' : ''}`}>
-                                    Profile
+                                    Perfil
                                 </Link>
                             </li>
                         )}
-                        {shouldShowProductLink && userData && (
+                        {shouldShowProductLink && userToken && (
                             <li>
                                 <Link href="/product">
-                                    Product
+                                    Productos
                                 </Link>
                             </li>
                         )}
-                        {pathname !== '/auth/login' && !userData && (
+                        {pathname !== '/auth/login' && !userToken && (
                             <li>
                                 <Link href="/auth/login">
-                                    Login
+                                    Iniciar sesión
                                 </Link>
                             </li>
                         )}
-                        {pathname !== '/auth/register' && !userData && (
+                        {pathname !== '/auth/register' && !userToken && (
                             <li>
                                 <Link href="/auth/register">
-                                    Register
+                                    Registrarse
                                 </Link>
                             </li>
                         )}
@@ -119,8 +118,8 @@ const Header = () => {
                                     ⚙️
                                 </summary>
                                 <ul className="p-2 bg-base-100 rounded-t-none">
-                                    {userData && (
-                                        <li><button onClick={handleOpenModal}>Logout</button></li>
+                                    {userToken && (
+                                        <li><button onClick={handleOpenModal}>Cerrar sesión</button></li>
                                     )}
                                     <li><ThemeToggle /></li>
                                 </ul>
@@ -131,8 +130,8 @@ const Header = () => {
             </header>
             <Modal
                 id="my_modal_5"
-                title="Are you sure you want to log out?"
-                message="When you leave you can log back in, your data is safe with us!"
+                title="Cerrar sesión"
+                message="Confirmar cerrar la sesión"
                 onConfirm={handleLogout}
                 onCancel={handleCancel}
             />

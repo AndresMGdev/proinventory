@@ -1,20 +1,18 @@
 'use client'
-
-import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import UsersTable from "@/components/user/UsersTable";
+import { getAllUsersService } from "@/services/users";
+import { validateTokenExp } from "@/helpers/helpers";
 
 const Home = () => {
-  let [registeredUsers, setRegisteredUsers] = useState([]);
+  let [registeredUsers, setRegisteredUsers] = useState(null);
   const router = useRouter();
+
   useEffect(() => {
-    const loggedUserFromStorage = JSON.parse(localStorage.getItem('loggedUser')) || [];
-    const usersFromStorage = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-      setRegisteredUsers(usersFromStorage.filter(users => !users.isDelete));
-    if (loggedUserFromStorage.length > 0 || loggedUserFromStorage.email) {
-      const usersFromStorage = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-      setRegisteredUsers(usersFromStorage.filter(users => !users.isDelete));
+    const tokenIsValid = validateTokenExp(localStorage.getItem('userToken'))
+    if (tokenIsValid) {
+      registeredUsers === null && getAllUsers();
     } else {
       setTimeout(() => {
         router.push('/');
@@ -22,6 +20,15 @@ const Home = () => {
     }
   }, []);
 
+  const getAllUsers = async () => {
+     getAllUsersService(localStorage.getItem('userToken'))
+      .then(response => {
+        if (response) {
+          setRegisteredUsers(response.data.data);
+        }
+      })
+      .catch(err => console.log(err));
+  };
   return (
     <>
       <div className="hero min-h-screen bg-base-200">
@@ -39,13 +46,13 @@ const Home = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {registeredUsers.length > 0 ? (
+                    {registeredUsers && registeredUsers.length > 0 ? (
                       registeredUsers.map(user => (
                         <UsersTable
-                          key={user.documentId}
+                          key={user.id}
                           email={user.email}
-                          name={user.firstName}
-                          lastname={user.lastName}
+                          name={user.first_name}
+                          lastname={user.last_name}
                         />
                       ))
                     ) : (

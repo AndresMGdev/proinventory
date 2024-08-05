@@ -1,232 +1,171 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Modal from "@/components/ui/Modal";
+import { useInputHook } from "@/hooks/use-input-hook";
+import { createUserService } from "@/services/users";
+import { wordToCapitalize, encodeBase64 } from "@/helpers/helpers";
 
 const RegisterPage = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-  } = useForm();
-
+  let [user, setUser] = useState(null);
+  const [message, setMessage] = useState({ text: '', type: '' });
   const router = useRouter();
+  const [formEvent, setFormEvent] = useState(null);
+  const [documentsTypeList] = useState([
+    { id: 1, name: 'Cédula de Ciudadanía (CC)' },
+    { id: 2, name: 'Tarjeta de Identidad (TI)' },
+    { id: 3, name: 'Registro Civil (RC)' },
+    { id: 4, name: 'Cédula de Extranjería (CE)' },
+    { id: 5, name: 'Carné de Identidad (CI)' },
+    { id: 6, name: 'Documento Nacional de Identidad (DNI)' }
+  ]);
 
-  const onSubmit = handleSubmit((data) => {
-    const modal = document.getElementById("my_modal_6");
-    modal.showModal();
 
-    localStorage.setItem(data.email, JSON.stringify(data));
+  let { value: emailValue, bind: emailBind } = useInputHook('');
+  let { value: firstNameValue, bind: firstNameBind } = useInputHook('');
+  let { value: lastNameValue, bind: lastNameBind } = useInputHook('');
+  let { value: documentTypeValue, bind: documentTypeBind } = useInputHook('');
+  let { value: documentIdValue, bind: documentIdBind } = useInputHook('');
+  let { value: phoneValue, bind: phoneBind } = useInputHook('');
+  let { value: addressValue, bind: addressBind } = useInputHook('');
+  let { value: passwordValue, bind: passwordBind } = useInputHook('');
 
-    router.push("/auth/login");
-  });
+  useEffect(() => {
+    user && registerUser();
+  }, [user]);
 
-  const onConfirm = () => {
-    const modal = document.getElementById("my_modal_6");
-    modal.close();
+  const registerUser = () => {
+    createUserService(user)
+      .then(response => {
+        if (response) {
+          setMessage({ text: response.data.message, type: 'alert alert-success' });
+
+          setTimeout(() => {
+              router.push('/auth/login');
+          }, 1000);
+        }
+      })
+      .catch(err => {
+        setMessage({ text: err.response.data, type: 'alert alert-error' });
+      })
+  }
+  const getDataFormMyForm = (event) => {
+    const form = event.target;
+    event.preventDefault();
+    if (form.checkValidity() === false) {
+      form.classList.add('was-validated');
+      setMessage({ text: 'Por favor, diligencia todos los campos', type: 'alert alert-error' });
+      return;
+    }
+
+    const newUser = {
+      email: emailValue,
+      first_name: wordToCapitalize(firstNameValue),
+      last_name: wordToCapitalize(lastNameValue),
+      document_type: documentTypeValue,
+      document_id: documentIdValue,
+      phone: phoneValue,
+      address: addressValue,
+      password: passwordValue
+    };
+
+    setUser(newUser);
   };
 
+  const handleShowModal = (event) => {
+    event.preventDefault();
+    setFormEvent(event);
+    document.getElementById('modal_register').showModal();
+  };
+
+  const onConfirm = () => {
+    document.getElementById('modal_register').close();
+    if (formEvent) {
+      getDataFormMyForm(formEvent);
+    }
+  };
+  const onCancel = () => {
+    document.getElementById('modal_register').close();
+    setMessage({ text: 'Registro cancelado.', type: 'alert alert-warning' });
+  }
+
   return (
-    <>
+    <div className="w-[100%]" noValidate>
       <div className="hero min-h-[90vh] bg-base-200">
         <div className="card shrink-0 w-[100%] shadow-2xl bg-base-100">
-          <form className="card-body items-center" onSubmit={onSubmit}>
-            <h2 className="card-title">Register / Registrarse</h2>
+          <form className="card-body items-center" onSubmit={handleShowModal} noValidate>
+            <h2 className="card-title">Registrarse</h2>
             <div className="lg:flex items-stretch">
               <div className="f1 lg:mr-2">
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Email</span>
+                    <span className="label-text">Correo electronico:</span>
                   </label>
-                  <input
-                    {...register("email", {
-                      required: "Email is required",
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: "Invalid email address",
-                      },
-                    })}
-                    type="email"
-                    placeholder="Email"
-                    className={`input input-bordered ${
-                      errors.email ? "input-error" : ""
-                    }`}
-                  />
-                  {errors.email && (
-                    <span className="text-red-500">{`${errors.email.message}`}</span>
-                  )}
+                  <input type="email" id="email" name="email" placeholder="Ingresa tu email" required className="input input-bordered w-full" {...emailBind} />
                 </div>
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Name</span>
+                    <span className="label-text">Nombre(s):</span>
                   </label>
-                  <input
-                    {...register("name", { required: "Name is required" })}
-                    type="text"
-                    placeholder="Name"
-                    className={`input input-bordered ${
-                      errors.name ? "input-error" : ""
-                    }`}
-                  />
-                  {errors.name && (
-                    <span className="text-red-500">{`${errors.name.message}`}</span>
-                  )}
+                  <input type="text" id="firstName" name="firstName" placeholder="Ingresa tus nombres" required className="input input-bordered w-full" {...firstNameBind} />
                 </div>
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Lastname</span>
+                    <span className="label-text">Apellido(s):</span>
                   </label>
-                  <input
-                    {...register("lastname", {
-                      required: "Lastname is required",
-                    })}
-                    type="text"
-                    placeholder="Lastname"
-                    className={`input input-bordered ${
-                      errors.lastname ? "input-error" : ""
-                    }`}
-                  />
-                  {errors.lastname && (
-                    <span className="text-red-500">{`${errors.lastname.message}`}</span>
-                  )}
+                  <input name="lastName" type="text" placeholder="Ingresa tus apellidos" required className="input input-bordered w-full" {...lastNameBind} />
                 </div>
               </div>
               <div className="f2 lg:mr-2">
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">ID</span>
+                    <span className="label-text">Tipo de identificación:</span>
                   </label>
                   <div className="flex">
-                    <select
-                      {...register("typeId", {
-                        required: {
-                          value: true,
-                          message: "Type ID is required",
-                        },
-                      })}
-                      className={`select select-bordered w-auto ${
-                        errors.typeId ? "select-error" : ""
-                      }`}
-                    >
-                      <option disabled value="">
-                        Type
-                      </option>
-                      <option value="TI">TI</option>
-                      <option value="RC">RC</option>
-                      <option value="CC">CC</option>
-                      <option value="CE">CE</option>
-                      <option value="CI">CI</option>
-                      <option value="DNI">DNI</option>
+                    <select id="documentType" name="documentType" className="select select-bordered w-full" required value={documentTypeValue} {...documentTypeBind}>
+                      <option disabled value="">Seleccione un tipo de identificación</option>
+                      {documentsTypeList.map((doc) => (
+                        <option key={doc.id} value={doc.id}>
+                          {doc.name}
+                        </option>
+                      ))}
                     </select>
-                    <input
-                      {...register("identification", {
-                        required: "ID Number is required",
-                      })}
-                      type="text"
-                      placeholder="ID Number"
-                      className={`input input-bordered ml-2 ${
-                        errors.identification ? "input-error" : ""
-                      }`}
-                    />
-                  </div>
-                  <div className="flex">
-                    {errors.typeId && (
-                      <span className="text-red-500">{`${errors.typeId.message}`}</span>
-                    )}
-                    {errors.identification && (
-                      <span className="text-red-500">
-                        -{`${errors.identification.message}`}
-                      </span>
-                    )}
+                    <label className="label">
+                      <span className="label-text">Número o ID de identificación:</span>
+                    </label>
+                    <input name="documentId" type="number" placeholder="Ingresa tu numero de documento" className="input input-bordered w-full" required {...documentIdBind} />
                   </div>
                 </div>
 
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Number Phone</span>
+                    <span className="label-text">Teléfono:</span>
                   </label>
-                  <input
-                    {...register("phone", {
-                      required: "Phone Number is required",
-                    })}
-                    type="text"
-                    placeholder="Phone Number"
-                    className={`input input-bordered ${
-                      errors.phone ? "input-error" : ""
-                    }`}
-                  />
-                  {errors.phone && (
-                    <span className="text-red-500">{`${errors.phone.message}`}</span>
-                  )}
+                  <input name="phone" type="number" placeholder="Ingresa tu numero telefonico" className="input input-bordered w-full" required {...phoneBind} />
                 </div>
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Address</span>
+                    <span className="label-text">Dirección:</span>
                   </label>
-                  <input
-                    {...register("address", {
-                      required: "Address is required",
-                    })}
-                    type="text"
-                    placeholder="Address"
-                    className={`input input-bordered ${
-                      errors.address ? "input-error" : ""
-                    }`}
-                  />
-                  {errors.address && (
-                    <span className="text-red-500">{`${errors.address.message}`}</span>
-                  )}
+                  <input name="address" type="text" placeholder="Ingresa tu dirección de residencia" className="input input-bordered w-full" required {...addressBind} />
                 </div>
               </div>
               <div className="f3">
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text">Password</span>
+                    <span className="label-text">Contraseña/Password:</span>
                   </label>
-                  <input
-                    {...register("password", {
-                      required: "Password is required",
-                      minLength: {
-                        value: 8,
-                        message: "Password must have at least 8 characters",
-                      },
-                    })}
-                    type="password"
-                    placeholder="Password"
-                    className={`input input-bordered ${
-                      errors.password ? "input-error" : ""
-                    }`}
-                  />
-                  {errors.password && (
-                    <span className="text-red-500">{`${errors.password.message}`}</span>
-                  )}
-                </div>
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Confirm Password</span>
-                  </label>
-                  <input
-                    {...register("confirmPassword", {
-                      required: "Confirm Password is required",
-                      validate: (value) =>
-                        value === watch("password") || "Passwords do not match",
-                    })}
-                    type="password"
-                    placeholder="Confirm Password"
-                    className={`input input-bordered ${
-                      errors.confirmPassword ? "input-error" : ""
-                    }`}
-                  />
-                  {errors.confirmPassword && (
-                    <span className="text-red-500">{`${errors.confirmPassword.message}`}</span>
-                  )}
+                  <input type="password" placeholder="Ingresa tu contraseña" className="input input-bordered w-full" required {...passwordBind} />
                 </div>
                 <div className="form-control mt-9">
                   <button type="submit" className="btn btn-primary">
-                    Register
+                    Registrarme
                   </button>
+                  {message.text && (
+                    <div className="w-[60%] mx-auto my-2">
+                      <div role="alert" className={`pl-[20%] ${message.type}`}>{message.text}</div>
+                    </div>)}
                 </div>
               </div>
             </div>
@@ -235,11 +174,13 @@ const RegisterPage = () => {
       </div>
 
       <Modal
-        id="my_modal_6"
-        title="¡Te has registrado con éxito!"
+        id="modal_register"
+        title="Confirmación de Registro"
+        message="¿Está seguro de que desea registrarse con la información proporcionada?"
         onConfirm={onConfirm}
+        onCancel={onCancel}
       />
-    </>
+    </div>
   );
 };
 
