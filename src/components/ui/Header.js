@@ -14,12 +14,16 @@ const Header = () => {
     const [userToken, setUserToken] = useState(null); // Estado para el usuario logueado
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const storeduserToken = localStorage.getItem('userToken');
-            if (storeduserToken) {
-                setUserToken(storeduserToken);
-            }
+        //ToDo: Quitar el evento y solo validar que el elemento no este null.
+        const handleStorageChange = () => {
+            const storedUserToken  = sessionStorage.getItem('userToken');
+            setUserToken(storedUserToken );
         }
+         handleStorageChange();
+         window.addEventListener('userTokenChanged', handleStorageChange);
+         return () => {
+             window.removeEventListener('userTokenChanged', handleStorageChange);
+         };
     }, []);
 
     const toggleMobileMenu = () => {
@@ -27,14 +31,13 @@ const Header = () => {
     };
 
     const handleLogout = () => {
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem('userToken');
+            sessionStorage.removeItem('userToken');
             const modal = document.getElementById('my_modal_5');
+            setUserToken(null);
             modal.close();
             setTimeout(() => {
                 router.push('/auth/login');
             }, 1000);
-        }
     };
 
     const handleOpenModal = () => {
@@ -81,7 +84,7 @@ const Header = () => {
                     <ul className={`menu max-lg:absolute max-lg:right-2 max-lg:top-14 max-lg:mt-3 max-lg:z-[10] max-lg:p-2 lg:menu-horizontal lg:px-1 max-lg:shadow max-lg:bg-base-100 max-lg:rounded-box max-lg:w-52 ${mobileMenuOpen ? '' : 'hidden'}`}>
                         <li>
                             <Link href="/" className={`${pathname === '/' ? 'active' : ''}`}>
-                                Pagina principal
+                                Página principal
                             </Link>
                         </li>
                         {userToken && (

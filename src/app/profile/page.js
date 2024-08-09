@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useInputHook } from "@/hooks/use-input-hook";
-import { getUserByEmailService } from "@/services/users";
-import { validateTokenExp, getEmailUserLogged } from "@/helpers/helpers";
-import { updateUserService } from "@/services/users";
+
+import { useRouter } from "next/navigation";
+
+import { getUserByEmailService, updateUserPasswordService, updateUserService, deleteUserService } from "@/services/users";
+import { validateTokenExp, getEmailUserLogged, wordToCapitalize, validateNumber } from "@/helpers/helpers";
+
 const ProfilePage = () => {
 
   const [documentsTypeList] = useState([
@@ -13,10 +15,12 @@ const ProfilePage = () => {
     { id: 2, name: 'Tarjeta de Identidad (TI)' },
     { id: 3, name: 'Registro Civil (RC)' },
     { id: 4, name: 'Cédula de Extranjería (CE)' },
-    { id: 5, name: 'Carné de Identidad (CI)' },
+    { id: 5, name: 'Carnét de Identidad (CI)' },
     { id: 6, name: 'Documento Nacional de Identidad (DNI)' }
   ]);
+
   let [user, setUser] = useState(null);
+  let [password, setPassword] = useState(null);
 
   const router = useRouter();
 
@@ -28,47 +32,22 @@ const ProfilePage = () => {
 
 
 
-  let { value: nameValue, bind: nameBind, setValue: setValueFirtsName } = useInputHook('');
-  let { value: lastnameValue, bind: lastnameBind, setValue: setValuelastname } = useInputHook('');
-  let { value: phoneValue, bind: phoneBind, setValue: setValuePhone } = useInputHook('');
-  let { value: addressValue, bind: addressBind, setValue: setValueAddress } = useInputHook('');
+  let { value: nameValue, bind: nameBind, setValue: setValueFirtsName, error: nameError, setError: setNameError } = useInputHook('');
+  let { value: lastnameValue, bind: lastnameBind, setValue: setValuelastname, error: lastNameError, setError: setLastNameError } = useInputHook('');
+  let { value: phoneValue, bind: phoneBind, setValue: setValuePhone, error: phoneError, setError: setPhoneError } = useInputHook('');
+  let { value: addressValue, bind: addressBind, setValue: setValueAddress, error: addressError, setError: setAddressError } = useInputHook('');
 
-  let { value: passwordOldValue, bind: passwordOldBind } = useInputHook('');
-  let { value: passwordNewValue, bind: passwordNewBind } = useInputHook('');
-  let { value: passwordVerificationNewValue, bind: passwordVerificationNewBind } = useInputHook('');
-
-  useEffect(() => {
-    user && updateUser();
-  }, [user]);
-
-  const updateUser = () => {
-    updateUserService(getEmailUserLogged(localStorage.getItem('userToken')), user, localStorage.getItem('userToken'))
-      .then(response => {
-        if (response) {
-          setMessageEdit({ text: response.data.message, type: 'alert alert-success' });
-
-          setTimeout(() => {
-            setMessageEdit({ text: '' })
-          }, 3000);
-          setIsEditing(false);
-
-        }
-      })
-      .catch(err => {
-        setMessageEdit({ text: err.response.data, type: 'alert alert-error' });
-        setTimeout(() => {
-          setMessageEdit({ text: '' })
-        }, 3000);
-      })
-  }
+  let { value: passwordOldValue, bind: passwordOldBind, error: passwordOldError, setError: setPasswordOldError } = useInputHook('');
+  let { value: passwordNewValue, bind: passwordNewBind, error: passwordNewError, setError: setPasswordNewError } = useInputHook('');
+  let { value: passwordVerificationNewValue, bind: passwordVerificationNewBind, error: passwordVerificationNewError, setError: setPasswordVerificationNewError } = useInputHook('');
 
   useEffect(() => {
-    const tokenIsValid = validateTokenExp(localStorage.getItem('userToken'))
+    const tokenIsValid = validateTokenExp(sessionStorage.getItem('userToken'))
     if (tokenIsValid) {
       userLogged && getUserByEmail();
     } else {
       setTimeout(() => {
-        router.push('/');
+        router.push('/options');
       }, 1000);
     }
   }, []);
@@ -80,9 +59,77 @@ const ProfilePage = () => {
     setValueAddress(userLogged.address || '');
   }, [userLogged]);
 
+  useEffect(() => {
+    user && updateUser();
+  }, [user]);
+
+  useEffect(() => {
+    //ToDo: Actualizar Swagger.
+    password && updateUserPassword();
+  }, [password]);
+
+
+
+  const updateUser = () => {
+    updateUserService(getEmailUserLogged(sessionStorage.getItem('userToken')), user, sessionStorage.getItem('userToken'))
+      .then(response => {
+        if (response) {
+          setMessageEdit({ text: response.data.message, type: 'alert alert-success' });
+
+          setTimeout(() => {
+            setMessageEdit({ text: '' })
+          }, 3000);
+          setIsEditing(false);
+          getUserByEmail();
+        }
+      })
+      .catch(err => {
+        setMessageEdit({ text: err.response.data, type: 'alert alert-error' });
+        setTimeout(() => {
+          setMessageEdit({ text: '' })
+        }, 3000);
+      })
+  }
+
+  const deleteUser = () => {
+    deleteUserService(getEmailUserLogged(sessionStorage.getItem('userToken')), sessionStorage.getItem('userToken'))
+      .then(response => {
+        if (response) {
+          sessionStorage.removeItem('userToken');
+          setMessage({ text: 'Cuenta eliminada con éxito', type: 'alert alert-success' });
+          setTimeout(() => {
+            router.push('/options');
+          }, 3000);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }
+
+  const updateUserPassword = () => {
+    updateUserPasswordService(getEmailUserLogged(sessionStorage.getItem('userToken')), password, sessionStorage.getItem('userToken'))
+      .then(response => {
+        if (response) {
+          setMessage({ text: response.data.message, type: 'alert alert-success' });
+          sessionStorage.removeItem('userToken');
+          setMessage({ text: 'Contraseña actualizada con éxito', type: 'alert alert-success' });
+          setTimeout(() => {
+            router.push('/options');
+          }, 3000);
+        }
+      })
+      .catch(err => {
+        setMessage({ text: err.response.data, type: 'alert alert-error' });
+        setTimeout(() => {
+          setMessage({ text: '' })
+        }, 3000);
+      })
+  }
+
   const getUserByEmail = () => {
-    const email = getEmailUserLogged(localStorage.getItem('userToken'))
-    getUserByEmailService(email, localStorage.getItem('userToken'))
+    const email = getEmailUserLogged(sessionStorage.getItem('userToken'))
+    getUserByEmailService(email, sessionStorage.getItem('userToken'))
       .then(response => {
         if (response) {
           setUserLogged(response.data.data);
@@ -108,16 +155,6 @@ const ProfilePage = () => {
       }, 3000);
     }
   };
-  const handleEditSaveClick = (event) => {
-    event.preventDefault();
-    const userEdited = {
-      first_name: nameValue,
-      last_name: lastnameValue,
-      phone: phoneValue,
-      address: addressValue
-    };
-    setUser(userEdited)
-  };
 
   const handleCancel = () => {
     document.getElementById('modal_change_password').close();
@@ -126,6 +163,54 @@ const ProfilePage = () => {
       setMessage({ text: '' })
     }, 3000);
   };
+
+  const handleEditSaveClick = (event) => {
+    event.preventDefault();
+    const form = event.target;
+
+    let valid = true;
+
+    if (nameValue.length < 4) {
+      setNameError('El nombre debe tener al menos 4 caracteres.');
+      valid = false;
+    }
+
+    if (lastnameValue.length < 4) {
+      setLastNameError('El apellido debe tener al menos 4 caracteres.');
+      valid = false;
+    }
+    if (!validateNumber(phoneValue)) {
+      setPhoneError('El teléfono debe ser numérico.');
+      valid = false;
+    }
+    if (phoneValue.length !== 10) {
+      setPhoneError('El teléfono debe tener 10 caracteres.');
+      valid = false;
+    }
+    if (addressValue.length < 5) {
+      setAddressError('La dirección debe tener al menos 5 caracteres.');
+      valid = false;
+    }
+    if (form.checkValidity() === false) {
+      form.classList.add('was-validated');
+      setMessageEdit({ text: 'Por favor, diligencia todos los campos.', type: 'alert alert-error' });
+      setTimeout(() => {
+        setMessageEdit({ text: '' })
+      }, 3000);
+      return;
+    }
+    if (valid) {
+      const userEdited = {
+        first_name: wordToCapitalize(nameValue),
+        last_name: wordToCapitalize(lastnameValue),
+        phone: phoneValue,
+        address: addressValue
+      };
+      setUser(userEdited)
+    }
+  };
+
+
 
   const handleShowModalDeleteAcount = (event) => {
     event.preventDefault();
@@ -147,6 +232,7 @@ const ProfilePage = () => {
       setMessage({ text: '' })
     }, 3000);
   };
+
   const handleEditClick = (event) => {
     event.preventDefault();
     setIsEditing(true);
@@ -160,57 +246,52 @@ const ProfilePage = () => {
   const changePasswordUser = (event) => {
     event.preventDefault();
     const form = event.target;
+
+    let valid = true;
+    //ToDo: Cambiar a una expresión regular.
+    if (passwordNewValue.length < 8) {
+      setPasswordNewError('La nueva contraseña debe tener al menos 8 caracteres.');
+      valid = false;
+    }
+    if (passwordVerificationNewValue.length < 8) {
+      setPasswordVerificationNewError('La confirmación de la nueva contraseña debe tener al menos 8 caracteres.');
+      valid = false;
+    }
+    if (passwordOldValue.length < 8) {
+      setPasswordOldError('La contraseña anterior debe tener al menos 8 caracteres.');
+      valid = false;
+    }
     if (form.checkValidity() === false) {
       form.classList.add('was-validated');
       setMessage({ text: 'Por favor, diligencia todos los campos', type: 'alert alert-error' });
       return;
     }
-    if (passwordOldValue !== userLogged.password) {
-      setMessage({ text: 'La contraseña actual no corresponde con la contraseña anterior.', type: 'alert alert-error' });
-      return;
-    }
-    if (passwordNewValue === passwordVerificationNewValue) {
-      if (passwordOldValue === passwordNewValue) {
-        setMessage({ text: 'La contraseña nueva no puede ser identica a la actual.', type: 'alert alert-error' });
-        return;
-      }
-    } else {
+
+    if (passwordNewValue !== passwordVerificationNewValue) {
       setMessage({ text: 'La confirmación de la contraseña y la nueva contraseña no son iguales.', type: 'alert alert-error' });
       return;
     }
+    if (valid) {
+      const userPasswordEdited = {
+        passwordOld: passwordOldValue,
+        passwordNew: passwordNewValue,
 
-    const registeredUser = JSON.parse(localStorage.getItem(userLogged.email)) || [];
+      };
+      setPassword(userPasswordEdited);
+    }
 
-    registeredUser.password = passwordNewValue;
-    registeredUser.confirmPassword = passwordVerificationNewValue;
+    
 
-    localStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
-
-    setMessage({ text: 'Contraseña actualizada con éxito', type: 'alert alert-success' });
-    localStorage.removeItem('authUser');
-    setTimeout(() => {
-      router.push('/auth/login');
-    }, 1000);
   };
 
   const deleteUserAcount = () => {
-    const registeredUser = JSON.parse(localStorage.getItem(userLogged.email)) || [];
-
-    registeredUser.isDelete = true;
-
-    localStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
-
-    setMessage({ text: 'Cuenta eliminada con éxito', type: 'alert alert-success' });
-    localStorage.removeItem('authUser');
-    setTimeout(() => {
-      router.push('/auth/login');
-    }, 1000);
+    deleteUser();
   }
-
+  //ToDo: Cambiar los dialog a Modal
   return (
     <>
-      <div className="hero min-h-screen bg-base-200 ">
-        <div className="flex rounded-xl w-[50%] bg-base-100 shadow-xl my-4">
+      <div className="hero min-h-[85vh] bg-base-200 ">
+        <div className="flex rounded-xl w-[60%] bg-base-100 shadow-xl my-4">
           <form noValidate className="w-1/2 p-4" onSubmit={handleEditSaveClick}>
             <h1 className="text-2xl mt-4 font-bold text-center">Información del usuario</h1>
             <div className="m-8">
@@ -220,7 +301,10 @@ const ProfilePage = () => {
             <div className="m-8">
               <label className="font-bold">Nombres(s):</label>
               {isEditing ? (
-                <input type="text" id="name" name="name" placeholder="Ingresa tus nombres" required className="input input-bordered w-full"  {...nameBind} value={nameValue} />
+                <>
+                  <input type="text" id="name" name="name" placeholder="Ingresa tus nombres" required className="input input-bordered w-full"  {...nameBind} value={nameValue} />
+                  {nameError && <span className="text-red-500 text-sm">{nameError}</span>}
+                </>
               ) : (
                 <label className="ml-2">{userLogged.first_name}</label>
               )}
@@ -228,7 +312,10 @@ const ProfilePage = () => {
             <div className="m-8">
               <label className="font-bold">Apellido(s):</label>
               {isEditing ? (
-                <input name="lastname" type="text" placeholder="Ingresa tus apellidos" required className="input input-bordered w-full" {...lastnameBind} value={lastnameValue} />
+                <>
+                  <input name="lastname" type="text" placeholder="Ingresa tus apellidos" required className="input input-bordered w-full" {...lastnameBind} value={lastnameValue} />
+                  {lastNameError && <span className="text-red-500 text-sm">{lastNameError}</span>}
+                </>
               ) : (
                 <label className="ml-2">{userLogged.last_name}</label>
               )}
@@ -244,7 +331,10 @@ const ProfilePage = () => {
             <div className="m-8">
               <label className="font-bold">Teléfono:</label>
               {isEditing ? (
-                <input type="number" name="phone" placeholder="Ingresa tu numero telefonico" className="input input-bordered w-full" required {...phoneBind} value={phoneValue} />
+                <>
+                  <input type="number" name="phone" placeholder="Ingresa tu numero telefonico" className="input input-bordered w-full" required {...phoneBind} value={phoneValue} />
+                  {phoneError && <span className="text-red-500 text-sm">{phoneError}</span>}
+                </>
               ) : (
                 <label className="ml-2">{userLogged.phone}</label>
               )}
@@ -252,7 +342,10 @@ const ProfilePage = () => {
             <div className="m-8">
               <label className="font-bold">Dirección:</label>
               {isEditing ? (
-                <input type="text" name="address" placeholder="Ingresa tu dirección de residencia" className="input input-bordered w-full" required {...addressBind} value={addressValue} />
+                <>
+                  <input type="text" name="address" placeholder="Ingresa tu dirección de residencia" className="input input-bordered w-full" required {...addressBind} value={addressValue} />
+                  {addressError && <span className="text-red-500 text-sm">{addressError}</span>}
+                </>
               ) : (
                 <label className="ml-2">{userLogged.address}</label>
               )}
@@ -286,14 +379,17 @@ const ProfilePage = () => {
             <div className="form-control m-8">
               <label className="fw-bold">Contraseña/Password anterior:</label>
               <input type="password" placeholder="Password" className="input input-bordered w-full" required {...passwordOldBind} />
+              {passwordOldError && <span className="text-red-500 text-sm">{passwordOldError}</span>}
             </div>
             <div className="form-control m-8">
               <label className="fw-bold">Contraseña/Password nueva:</label>
               <input type="password" placeholder="Password" className="input input-bordered w-full" required {...passwordNewBind} />
+              {passwordNewError && <span className="text-red-500 text-sm">{passwordNewError}</span>}
             </div>
             <div className="form-control m-8">
               <label className="fw-bold">Verificación Contraseña/Password nueva:</label>
               <input type="password" placeholder="Password" className="input input-bordered w-full" required {...passwordVerificationNewBind} />
+              {passwordVerificationNewError && <span className="text-red-500 text-sm">{passwordVerificationNewError}</span>}
             </div>
             <div className="align-items-center text-center">
               <button className="btn btn-outline mb-2" type="submit">

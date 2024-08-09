@@ -32,7 +32,7 @@ const Profile = ({
   const [messageEdit, setMessageEdit] = useState({ text: '', type: '' });
   const [formEvent, setFormEvent] = useState(null);
   useEffect(() => {
-    const storedUserData = localStorage.getItem("authUser");
+    const storedUserData = sessionStorage.getItem("authUser");
     if (storedUserData) {
       setUserLogged(JSON.parse(storedUserData));
     }
@@ -103,7 +103,7 @@ const Profile = ({
   };
   const handleEditSaveClick = (event) => {
     event.preventDefault();
-    const registeredUser = JSON.parse(localStorage.getItem(userLogged.email)) || [];
+    const registeredUser = JSON.parse(sessionStorage.getItem(userLogged.email)) || [];
 
     userLogged.name = nameValue;
     registeredUser.name = nameValue;
@@ -113,8 +113,8 @@ const Profile = ({
     registeredUser.typeId = typeIdValue;
     userLogged.address = addressValue;
     registeredUser.address = addressValue;
-    localStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
-    localStorage.setItem('authUser', JSON.stringify(userLogged));
+    sessionStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
+    sessionStorage.setItem('authUser', JSON.stringify(userLogged));
     setMessageEdit({ text: 'Usuario editado correctamente.', type: 'alert alert-success' });
 
     setTimeout(() => {
@@ -145,29 +145,29 @@ const Profile = ({
       return;
     }
 
-    const registeredUser = JSON.parse(localStorage.getItem(userLogged.email)) || [];
+    const registeredUser = JSON.parse(sessionStorage.getItem(userLogged.email)) || [];
 
     registeredUser.password = passwordNewValue;
     registeredUser.confirmPassword = passwordVerificationNewValue;
 
-    localStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
+    sessionStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
 
     setMessage({ text: 'Contraseña actualizada con éxito', type: 'alert alert-success' });
-    localStorage.removeItem('authUser');
+    sessionStorage.removeItem('authUser');
     setTimeout(() => {
       router.push('/auth/login');
     }, 1000);
   };
 
   const deleteUserAcount = () => {
-    const registeredUser = JSON.parse(localStorage.getItem(userLogged.email)) || [];
+    const registeredUser = JSON.parse(sessionStorage.getItem(userLogged.email)) || [];
 
       registeredUser.isDelete = true;
 
-      localStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
+      sessionStorage.setItem(userLogged.email, JSON.stringify(registeredUser));
 
       setMessage({ text: 'Cuenta eliminada con éxito', type: 'alert alert-success' });
-      localStorage.removeItem('authUser');
+      sessionStorage.removeItem('authUser');
       setTimeout(() => {
         router.push('/auth/login');
       }, 1000);

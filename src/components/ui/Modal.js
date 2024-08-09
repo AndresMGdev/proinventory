@@ -7,8 +7,8 @@ const Modal = ({ id, title, message, submit = true, cancel = true, onConfirm, on
         <h3 className="font-bold text-lg">{title}</h3>
         <p className="py-4">{message}</p>
         <div className="modal-action">
-          <button className={`btn  btn-primary ${submit ? ' ' : 'hidden'}`} type="submit" onClick={onConfirm}>Confirm</button>
-          <button className={`btn ${cancel ? ' ' : 'hidden'}`} onClick={onCancel}>Cancel</button>
+          <button className={`btn  btn-primary ${submit ? ' ' : 'hidden'}`} type="submit" onClick={onConfirm}>Confirmar</button>
+          <button className={`btn ${cancel ? ' ' : 'hidden'}`} onClick={onCancel}>Cancelar</button>
         </div>
       </div>
     </dialog>

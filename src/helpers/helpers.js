@@ -37,3 +37,22 @@ export const getEmailUserLogged = token => {
     return decoded.payload.email;
 
 }
+
+export const validateEmail = (email) => {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    return re.test(String(email).toLowerCase());
+}
+
+export const validateNumber = (number) => {
+    const re = /^[0-9]+$/
+    return re.test(number);
+}
+
+
+export const formatCurrency = (value, locale = 'es-ES', currency = 'COP') => {
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: currency,
+        minimumFractionDigits: 2
+    }).format(value);
+};

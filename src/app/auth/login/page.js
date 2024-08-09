@@ -6,23 +6,22 @@ import Link from 'next/link';
 import Modal from "@/components/ui/Modal";
 import { useInputHook } from "@/hooks/use-input-hook";
 import { loginUserService } from "@/services/auth";
+import { validateEmail } from "@/helpers/helpers";
+
 
 const LoginPage = () => {
   let [user, setUser] = useState(null);
-  let { value: emailValue, bind: emailBind } = useInputHook('');
-  let { value: passwordValue, bind: passwordBind } = useInputHook('');
-
   const [message, setMessage] = useState({ text: '', type: '' });
-
+  
   const router = useRouter();
 
+  let { value: emailValue, bind: emailBind, error: emailError, setError: setEmailError } = useInputHook('');
+  let { value: passwordValue, bind: passwordBind, error: passwordError, setError: setPasswordError } = useInputHook('');
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("authUser") || "{}");
-    if (userData && userData.email) {
-      router.push("/product");
-    }
+    //ToDo: Implentar el validateTokenExp
   }, [router]);
+
   useEffect(() => {
     user && loginUser();
   }, [user]);
@@ -31,9 +30,9 @@ const LoginPage = () => {
     loginUserService(user)
       .then(response => {
         if (response) {
-          localStorage.setItem('userToken', response.data.data);
+          sessionStorage.setItem('userToken', response.data.data); //ToDo: Implementar sesión storage.
           setMessage({ text: response.data.message, type: 'alert alert-success' });
-
+          window.dispatchEvent(new Event('userTokenChanged'));
           setTimeout(() => {
             router.push('/');
           }, 1000);
@@ -48,32 +47,36 @@ const LoginPage = () => {
     event.preventDefault();
     const form = event.target;
 
+    let valid = true;
+
+
+    if (!validateEmail(emailValue)) {
+      setEmailError('El correo electrónico no es válido.');
+      valid = false;
+    }
+
+    if (passwordValue.length < 8) {
+      setPasswordError('La contraseña debe tener al menos 8 caracteres.');
+      valid = false;
+    }
     if (form.checkValidity() === false) {
       form.classList.add('was-validated');
-      setMessage({ text: 'Por favor, diligencia todos los campos', type: 'alert alert-error' });
+      setMessage({ text: 'Por favor, diligencia todos los campos.', type: 'alert alert-error' });
       return;
     }
-    const userLogin = {
-      email: emailValue,
-      password: passwordValue
-    };
-    setUser(userLogin)
-    const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-    const user = registeredUsers.find(user => user.email === emailValue && user.password === encodeBase64(passwordValue) && user.isDelete !== true);
-    if (user) {
-      localStorage.setItem('loggedUser', JSON.stringify(user));
-      setMessage({ text: 'Inicio de sesión exitoso', type: 'alert alert-success' });
-      setTimeout(() => {
-        router.push('/');
-      }, 1000);
-    } else {
-      localStorage.removeItem('loggedUser');
-      setMessage({ text: 'Correo electrónico o contraseña incorrectos', type: 'alert alert-warning' });
+    if(valid){
+      
+      const userLogin = {
+        email: emailValue,
+        password: passwordValue
+      };
+      setUser(userLogin)
     }
   };
+  //Todo: Cambiar los colores de los errores por un red-200 en tema dark
   return (
     <>
-      <div className="hero min-h-screen bg-base-200">
+      <div className="hero min-h-[85vh] bg-base-200">
         <div className="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
           <form className="card-body" onSubmit={getDataFormMyForm} noValidate>
             <h2 className="card-title">Inicio de sesión de usuarios:</h2>
@@ -82,12 +85,14 @@ const LoginPage = () => {
                 <span className="label-text">Correo electronico:</span>
               </label>
               <input type="email" id="email" name="email" placeholder="Ingresa tu email" required className="input input-bordered w-full" {...emailBind} />
+              {emailError && <span className="text-red-200 text-sm">{emailError}</span>}
             </div>
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Contraseña/Password:</span>
               </label>
               <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required className="input input-bordered w-full"  {...passwordBind} />
+              {passwordError && <span className="text-red-500 text-sm">{passwordError}</span>}
             </div>
             <div className="form-control mt-6">
               <button type="submit" className="btn btn-primary">Iniciar sesión</button>

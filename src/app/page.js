@@ -10,18 +10,18 @@ const Home = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const tokenIsValid = validateTokenExp(localStorage.getItem('userToken'))
+    const tokenIsValid = validateTokenExp(sessionStorage.getItem('userToken'))
     if (tokenIsValid) {
       registeredUsers === null && getAllUsers();
     } else {
       setTimeout(() => {
-        router.push('/');
+        router.push('/options');
       }, 1000);
     }
   }, []);
 
   const getAllUsers = async () => {
-     getAllUsersService(localStorage.getItem('userToken'))
+     getAllUsersService(sessionStorage.getItem('userToken'))
       .then(response => {
         if (response) {
           setRegisteredUsers(response.data.data);
@@ -31,11 +31,11 @@ const Home = () => {
   };
   return (
     <>
-      <div className="hero min-h-screen bg-base-200">
+      <div className="hero min-h-[85vh] bg-base-200 ">
         <div className="hero-content text-center">
-          <div className="card w-auto bg-base-100 shadow-xl">
-            <div className="card-body">
-              <h2 className="card-title text-center">Usuarios registrados en el sistema</h2>
+          <div className="card w-auto bg-base-100 shadow-xl ">
+            <div className="card-body place-items-center">
+              <h2 className="card-title ">Usuarios registrados en el sistema</h2>
               <div className="overflow-x-auto">
                 <table className="table">
                   <thead>
