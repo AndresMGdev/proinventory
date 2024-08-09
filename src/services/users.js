@@ -27,3 +27,19 @@ export const updateUserService = (email, data, token) => {
         }
     });
 };
+
+export const deleteUserService = (email, token) => {
+    return http.delete(`/users/${email}/delete`, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+}
+
+export const updateUserPasswordService = (email, data, token) => {
+    return http.put(`/users/${email}/updatePassword`, data,{
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+};
