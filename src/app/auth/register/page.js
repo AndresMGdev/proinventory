@@ -58,7 +58,6 @@ const RegisterPage = () => {
     const form = event.target;
     event.preventDefault();
     let valid = true;
-    //ToDo: Implementar callbacks para no tener tantos if
     if (!validateEmail(emailValue)) {
       setEmailError('El correo electrónico no es válido.');
       valid = false;

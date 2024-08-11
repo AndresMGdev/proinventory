@@ -2,7 +2,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/ui/Footer";
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -14,12 +13,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-          <Header/>
-            <div className="flex flex-col items-center pt-16">
-              {children}
-            </div>
-          <Footer/>
-        </body>
+          <Header />
+          <div className="flex flex-col items-center pt-16">
+            {children}
+          </div>
+          <Footer />
+      </body>
     </html>
   );
 }

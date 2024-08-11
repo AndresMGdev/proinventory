@@ -7,6 +7,7 @@ import Modal from "@/components/ui/Modal";
 import { useInputHook } from "@/hooks/use-input-hook";
 import { loginUserService } from "@/services/auth";
 import { validateEmail } from "@/helpers/helpers";
+import { validateTokenExp } from "@/helpers/helpers";
 
 
 const LoginPage = () => {
@@ -19,7 +20,12 @@ const LoginPage = () => {
   let { value: passwordValue, bind: passwordBind, error: passwordError, setError: setPasswordError } = useInputHook('');
 
   useEffect(() => {
-    //ToDo: Implentar el validateTokenExp
+    const tokenIsValid = validateTokenExp(sessionStorage.getItem('userToken'))
+    if (tokenIsValid) {
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
+    }
   }, [router]);
 
   useEffect(() => {
@@ -30,9 +36,8 @@ const LoginPage = () => {
     loginUserService(user)
       .then(response => {
         if (response) {
-          sessionStorage.setItem('userToken', response.data.data); //ToDo: Implementar sesión storage.
+          sessionStorage.setItem('userToken', response.data.data);
           setMessage({ text: response.data.message, type: 'alert alert-success' });
-          window.dispatchEvent(new Event('userTokenChanged'));
           setTimeout(() => {
             router.push('/');
           }, 1000);
@@ -73,7 +78,6 @@ const LoginPage = () => {
       setUser(userLogin)
     }
   };
-  //Todo: Cambiar los colores de los errores por un red-200 en tema dark
   return (
     <>
       <div className="hero min-h-[85vh] bg-base-200">
@@ -85,7 +89,7 @@ const LoginPage = () => {
                 <span className="label-text">Correo electronico:</span>
               </label>
               <input type="email" id="email" name="email" placeholder="Ingresa tu email" required className="input input-bordered w-full" {...emailBind} />
-              {emailError && <span className="text-red-200 text-sm">{emailError}</span>}
+              {emailError && <span className="text-red-500 text-sm">{emailError}</span>}
             </div>
             <div className="form-control">
               <label className="label">

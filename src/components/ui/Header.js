@@ -7,37 +7,34 @@ import ThemeToggle from "./ThemeToggle";
 import Modal from "./Modal";
 
 const Header = () => {
-    const pathname = usePathname();
+
     const router = useRouter();
+    const pathname = usePathname();
+    const shouldShowUserLink = !pathname.startsWith('/profile');
     const shouldShowProductLink = !pathname.startsWith('/product');
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [userToken, setUserToken] = useState(null); // Estado para el usuario logueado
+    const [userToken, setUserToken] = useState(null);
+
 
     useEffect(() => {
-        //ToDo: Quitar el evento y solo validar que el elemento no este null.
-        const handleStorageChange = () => {
-            const storedUserToken  = sessionStorage.getItem('userToken');
-            setUserToken(storedUserToken );
+        const existingToken = sessionStorage.getItem('userToken');
+        if (existingToken) {
+            setUserToken(existingToken);
         }
-         handleStorageChange();
-         window.addEventListener('userTokenChanged', handleStorageChange);
-         return () => {
-             window.removeEventListener('userTokenChanged', handleStorageChange);
-         };
-    }, []);
+    }, [router]);
 
     const toggleMobileMenu = () => {
         setMobileMenuOpen(!mobileMenuOpen);
     };
 
     const handleLogout = () => {
-            sessionStorage.removeItem('userToken');
-            const modal = document.getElementById('my_modal_5');
-            setUserToken(null);
-            modal.close();
-            setTimeout(() => {
-                router.push('/auth/login');
-            }, 1000);
+        sessionStorage.removeItem('userToken');
+        const modal = document.getElementById('my_modal_5');
+        setUserToken(null);
+        modal.close();
+        setTimeout(() => {
+            router.push('/auth/login');
+        }, 1000);
     };
 
     const handleOpenModal = () => {
@@ -87,7 +84,7 @@ const Header = () => {
                                 Página principal
                             </Link>
                         </li>
-                        {userToken && (
+                        {shouldShowUserLink && userToken && (
                             <li>
                                 <Link href="/profile" className={`${pathname === '/profile' ? 'active' : ''}`}>
                                     Perfil
