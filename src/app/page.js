@@ -15,6 +15,7 @@ const Home = () => {
       registeredUsers === null && getAllUsers();
     } else {
       setTimeout(() => {
+        sessionStorage.removeItem('userToken');
         router.push('/options');
       }, 1000);
     }

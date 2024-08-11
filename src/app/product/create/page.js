@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Modal from "@/components/ui/Modal";
 import { useRouter } from "next/navigation";
 import { useInputHook } from "@/hooks/use-input-hook";
-import { wordToCapitalize, validateNumber, formatCurrency } from "@/helpers/helpers";
+import { createProductService } from "@/services/products";
+import { wordToCapitalize, validateNumber, formatCurrency, validateNegativeAndPositiveNumber } from "@/helpers/helpers";
 
 const CreatePage = () => {
     let [product, setProduct] = useState(null);
@@ -39,8 +40,24 @@ const CreatePage = () => {
     }, [productTypeValue, supplierValue]);
 
     useEffect(() => {
-        product && console.log('Producto registrado', product);
+        product && createProduct();
     }, [product]);
+
+    const createProduct = () => {
+        createProductService(sessionStorage.getItem('userToken'), product)
+            .then(response => {
+                if (response) {
+                    setMessage({ text: response.data.message, type: 'alert alert-success' });
+
+                    setTimeout(() => {
+                        router.push('/product');
+                    }, 3000);
+                }
+            })
+            .catch(err => {
+                setMessage({ text: err.response.data, type: 'alert alert-error' });
+            })
+    }
 
 
     const getDataFormMyForm = (event) => {
@@ -75,8 +92,16 @@ const CreatePage = () => {
             setSupplierError('El proveedor debe tener al menos 4 caracteres.');
             valid = false;
         }
+        if (!validateNegativeAndPositiveNumber(latitudeValue)) {
+            setLatitudeError('La latitud debe ser numerico.');
+            valid = false;
+        }
         if (latitudeValue == 0) {
             setLatitudeError('La latitud debe ser diferente a cero.');
+            valid = false;
+        }
+        if (!validateNegativeAndPositiveNumber(longitudeValue)) {
+            setLongitudeError('La longitud debe ser numerico.');
             valid = false;
         }
         if (longitudeValue == 0) {
@@ -100,7 +125,6 @@ const CreatePage = () => {
                 longitude: longitudeValue,
                 sku: skuValue
             };
-
             setProduct(newProduct);
         }
     };
@@ -110,7 +134,7 @@ const CreatePage = () => {
 
         const productType = productsTypeList.find(item => item.id === parseInt(productTypeValue));
         const productTypeCode = productType ? productType.name.substring(0, 3).toUpperCase() : 'XXX';
-        return `${productTypeCode}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}-${supplierValue.substring(0, 2).toUpperCase()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+        return `SKU-${productTypeCode}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}-${supplierValue.substring(0, 2).toUpperCase()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
     }
 
     const handleShowModal = (event) => {
@@ -187,14 +211,14 @@ const CreatePage = () => {
                             <label className="label">
                                 <span className="label-text">Latitud:</span>
                             </label>
-                            <input type="text" placeholder="Ingresa la latitud" className="input input-bordered w-full" required {...latitudeBind} />
+                            <input type="number" placeholder="Ingresa la latitud" className="input input-bordered w-full" required {...latitudeBind} />
                             {latitudeError && <span className="text-red-500 text-sm">{latitudeError}</span>}
                         </div>
                         <div className="form-control">
                             <label className="label">
                                 <span className="label-text">Longitude:</span>
                             </label>
-                            <input type="text" placeholder="Ingresa la longitud" className="input input-bordered w-full" required {...longitudeBind} />
+                            <input type="number" placeholder="Ingresa la longitud" className="input input-bordered w-full" required {...longitudeBind} />
                             {longitudeError && <span className="text-red-500 text-sm">{longitudeError}</span>}
                         </div>
                         <div className="form-control">

@@ -48,6 +48,11 @@ export const validateNumber = (number) => {
     return re.test(number);
 }
 
+export const validateNegativeAndPositiveNumber = (number) => {
+    const re = /^[0-9\.-]+$/
+    return re.test(number);
+}
+
 
 export const formatCurrency = (value, locale = 'es-ES', currency = 'COP') => {
     return new Intl.NumberFormat(locale, {

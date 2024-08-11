@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { getUserByEmailService, updateUserPasswordService, updateUserService, deleteUserService } from "@/services/users";
 import { validateTokenExp, getEmailUserLogged, wordToCapitalize, validateNumber } from "@/helpers/helpers";
+import Modal from "@/components/ui/Modal";
 
 const ProfilePage = () => {
 
@@ -47,6 +48,7 @@ const ProfilePage = () => {
       userLogged && getUserByEmail();
     } else {
       setTimeout(() => {
+        sessionStorage.removeItem('userToken');
         router.push('/options');
       }, 1000);
     }
@@ -64,7 +66,6 @@ const ProfilePage = () => {
   }, [user]);
 
   useEffect(() => {
-    //ToDo: Actualizar Swagger.
     password && updateUserPassword();
   }, [password]);
 
@@ -98,6 +99,7 @@ const ProfilePage = () => {
           sessionStorage.removeItem('userToken');
           setMessage({ text: 'Cuenta eliminada con éxito', type: 'alert alert-success' });
           setTimeout(() => {
+            sessionStorage.removeItem('userToken');
             router.push('/options');
           }, 3000);
         }
@@ -115,6 +117,7 @@ const ProfilePage = () => {
           sessionStorage.removeItem('userToken');
           setMessage({ text: 'Contraseña actualizada con éxito', type: 'alert alert-success' });
           setTimeout(() => {
+            sessionStorage.removeItem('userToken');
             router.push('/options');
           }, 3000);
         }
@@ -248,7 +251,6 @@ const ProfilePage = () => {
     const form = event.target;
 
     let valid = true;
-    //ToDo: Cambiar a una expresión regular.
     if (passwordNewValue.length < 8) {
       setPasswordNewError('La nueva contraseña debe tener al menos 8 caracteres.');
       valid = false;
@@ -280,14 +282,14 @@ const ProfilePage = () => {
       setPassword(userPasswordEdited);
     }
 
-    
+
 
   };
 
   const deleteUserAcount = () => {
     deleteUser();
   }
-  //ToDo: Cambiar los dialog a Modal
+
   return (
     <>
       <div className="hero min-h-[85vh] bg-base-200 ">
@@ -407,30 +409,21 @@ const ProfilePage = () => {
                 <div role="alert" className={`pl-[20%] ${message.type}`}>{message.text}</div>
               </div>)}
           </form>
-          <dialog id="modal_change_password" className="modal">
-            <div className="modal-box">
-              <h3 className="font-bold text-lg">Confirmación de cambio de contraseña</h3>
-              <p className="py-4">¿Está seguro de que desea cambiar la contraseña?</p>
-              <div className="modal-action">
-                <form method="dialog">
-                  <button className="btn btn-outline mb-4 mr-2" onClick={handleConfirm}>Confirmar</button>
-                  <button className="btn btn-error mb-4 ml-2" onClick={handleCancel}>Cancelar</button>
-                </form>
-              </div>
-            </div>
-          </dialog>
-          <dialog id="modal_delete_acount" className="modal">
-            <div className="modal-box">
-              <h3 className="font-bold text-lg">Eliminar cuenta</h3>
-              <p className="py-4">¿Está seguro de que desea eliminar su cuenta?</p>
-              <div className="modal-action">
-                <form method="dialog">
-                  <button className="btn btn-outline mb-4 mr-2" onClick={handleConfirmDeleteAcount}>Confirmar</button>
-                  <button className="btn btn-error mb-4 ml-2" onClick={handleCancelDeleteAcount}>Cancelar</button>
-                </form>
-              </div>
-            </div>
-          </dialog>
+          <Modal
+            id="modal_change_password"
+            title="Confirmación de cambio de contraseña"
+            message="¿Está seguro de que desea cambiar la contraseña?"
+            onConfirm={handleConfirm}
+            onCancel={handleCancel}
+          />
+
+          <Modal
+            id="modal_delete_acount"
+            title="Confirmación de eliminación de cuenta"
+            message="¿Está seguro de que desea eliminar su cuenta?"
+            onConfirm={handleConfirmDeleteAcount}
+            onCancel={handleCancelDeleteAcount}
+          />
         </div>
 
       </div>
