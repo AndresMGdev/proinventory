@@ -17,10 +17,15 @@ const Header = () => {
 
 
     useEffect(() => {
-        const existingToken = sessionStorage.getItem('userToken');
-        if (existingToken) {
-            setUserToken(existingToken);
+        const handleStorageChange = () => {
+            const storedUserToken  = sessionStorage.getItem('userToken');
+            setUserToken(storedUserToken );
         }
+         handleStorageChange();
+         window.addEventListener('userTokenChanged', handleStorageChange);
+         return () => {
+             window.removeEventListener('userTokenChanged', handleStorageChange);
+         };
     }, [router]);
 
     const toggleMobileMenu = () => {
