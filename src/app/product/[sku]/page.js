@@ -203,7 +203,7 @@ const ProductPage = (props) => {
     setMessage({ text: 'Edicición cancelada.', type: 'alert alert-warning' });
   }
 
-  const handleShowModalDeleteAcount = (event) => {
+  const handleShowModalDeleteProduct = (event) => {
     event.preventDefault();
     setFormEvent(event);
     document.getElementById('modal_delete_product').showModal();
@@ -344,7 +344,7 @@ const ProductPage = (props) => {
                     <button onClick={handleEditClick} className="btn btn-active btn-accent mb-2">
                       Editar
                     </button>
-                    <button onClick={handleShowModalDeleteAcount} className="btn btn-error mt-2">
+                    <button onClick={handleShowModalDeleteProduct} className="btn btn-error mt-2">
                       Eliminar producto
                     </button>
                   </div>

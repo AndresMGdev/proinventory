@@ -98,6 +98,7 @@ const ProfilePage = () => {
         if (response) {
           sessionStorage.removeItem('userToken');
           setMessage({ text: 'Cuenta eliminada con éxito', type: 'alert alert-success' });
+          window.dispatchEvent(new Event('userTokenChanged'));
           setTimeout(() => {
             sessionStorage.removeItem('userToken');
             router.push('/options');
@@ -116,6 +117,7 @@ const ProfilePage = () => {
           setMessage({ text: response.data.message, type: 'alert alert-success' });
           sessionStorage.removeItem('userToken');
           setMessage({ text: 'Contraseña actualizada con éxito', type: 'alert alert-success' });
+          window.dispatchEvent(new Event('userTokenChanged'));
           setTimeout(() => {
             sessionStorage.removeItem('userToken');
             router.push('/options');

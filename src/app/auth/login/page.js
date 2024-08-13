@@ -38,6 +38,7 @@ const LoginPage = () => {
         if (response) {
           sessionStorage.setItem('userToken', response.data.data);
           setMessage({ text: response.data.message, type: 'alert alert-success' });
+          window.dispatchEvent(new Event('userTokenChanged'));
           setTimeout(() => {
             router.push('/');
           }, 1000);
